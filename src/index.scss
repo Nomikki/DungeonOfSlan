@@ -1,0 +1,30 @@
+@import "./css/_functions.scss";
+@import "./css/colors.scss";
+
+html,
+body {
+  background-color: ui("background");
+  margin: 0;
+  padding: 0;
+  display: flex;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  width: 100vw;
+  height: 100vh;
+}
+
+#game {
+  position: fixed;
+  //left: 25%;
+  //top: 100%;
+  //transform: scale(400%, 400%);
+}
+
+#screen {
+  image-rendering: pixelated;
+  height: 100vh;
+}
+
+.hidden {
+  display: none;
+}
