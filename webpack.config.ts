@@ -3,6 +3,7 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 import webpack, { Configuration } from "webpack";
+import { version } from "./package.json";
 
 const buildTime = new Date().toISOString();
 
@@ -37,6 +38,7 @@ const config: Configuration = {
       COMMIT_HASH: JSON.stringify(process.env.COMMIT_HASH || "dev"),
       PRODUCTION: JSON.stringify(isProd),
       SEED: JSON.stringify(process.env.SEED),
+      VERSION: JSON.stringify(process.env.VERSION || `v${version}` || "dev"),
     }),
     new HtmlWebpackPlugin({
       filename: "index.html",

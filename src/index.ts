@@ -70,6 +70,17 @@ export class Game {
     this.ctx.putImageData(id, 0, 0);
   }
 
+  renderVersion() {
+    const versionText = `Commit ID: ${COMMIT_HASH} | Version: ${VERSION}`;
+
+    this.drawText(
+      `${versionText}`,
+       80 - versionText.length,
+      this.ctx.canvas.height / this.fontSize - 2,
+      "#808080",
+    );
+  }
+
   drawChar(ch: string, x: number, y: number, color = "#BBB") {
     if (x < 0 || y < 0 || (x + 1) * this.fontSize >= this.width || (y + 1) * this.fontSize >= this.height) {
       return;
@@ -122,8 +133,12 @@ export class Game {
     x: number,
     y: number,
     color = "#909090",
-    align = "left",
   ) {
+    for (let i = 0; i < text.length; i++)
+    {
+      this.drawChar(text.charAt(i), x + i, y, color);
+    }
+    /*
     this.ctx.textAlign = align as CanvasTextAlign;
     this.ctx.font = `${this.fontSize}px system-ui`;
     this.ctx.fillStyle = "#101010";
@@ -133,6 +148,7 @@ export class Game {
       x * this.fontSize,
       y * this.fontSize + this.fontSize,
     );
+    */
   }
 
   waitingKeypress() {
@@ -166,6 +182,8 @@ export class Game {
     for (let i = 0; i < this.actors.length; i++) {
       this.actors[i].Render();
     }
+
+    this.renderVersion();
   }
 
   getClosestEnemy(pos: vec2, range: number) {
