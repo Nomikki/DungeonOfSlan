@@ -1,6 +1,7 @@
 import { float2int } from "@/utils";
 import Randomizer from "@/utils/random";
 import Rectangle from "@/utils/rectangle";
+import vec2 from "@/utils/vec2";
 //import Rectangle from "@/utils/rectangle";
 //import Rectangle from "@/utils/rectangle";
 import { game } from "..";
@@ -49,6 +50,9 @@ export default class Level {
   nodeTemp: PathNode[];
   nodes: PathNode[];
 
+  startPosition: vec2;
+  stairs: vec2;
+
   dungeonName: string;
 
   constructor(width: number, height: number) {
@@ -61,6 +65,9 @@ export default class Level {
     this.pathMap = new Array(this.width * this.height);
     this.nodeTemp = [];
     this.nodes = [];
+
+    this.startPosition = new vec2(1, 1);
+    this.stairs = new vec2(1, 1);
 
   }
 
@@ -303,7 +310,7 @@ export default class Level {
 
       const room = new Rectangle(tempRoom.x, tempRoom.y, tempRoom.w, tempRoom.h);
 
-      this.makeWalls(room.x, room.y, room.x + room.w, room.y + room.h);
+      this.makeWalls(room.x, room.y, room.x + room.w, room.y + room.h); 0
       this.makeDoorHole(room.x, room.y, room.w, room.h, random.getInt(0, 4));
     }
 
@@ -323,28 +330,36 @@ export default class Level {
       }
     }
 
-
-
     for (let i = 0; i < this.nodeTemp.length; i++) {
       const node = this.nodeTemp[i];
       this.setFloor(node.x, node.y);
     }
-
-
-
-
-
 
     for (let i = 0; i < failedCorridos.length; i++) {
       const corridor = failedCorridos[i];
       this.createNaivePath(corridor.x, corridor.y, corridor.w, corridor.h);
     }
 
-
-
-
-
     this.fillUnusedTiles();
+
+    //set start and end
+    const startRoom = random.getInt(0, root.rooms.length);
+
+    const room = root.rooms[startRoom];
+    this.startPosition.x = float2int(room.GetCenterX());
+    this.startPosition.y = float2int(room.GetCenterY());
+
+    while (1) {
+      const endRoom = random.getInt(0, root.rooms.length);
+      if (endRoom != startRoom) {
+        const stairsRoom = root.rooms[endRoom];
+        this.stairs.x = float2int(stairsRoom.GetCenterX());
+        this.stairs.y = float2int(stairsRoom.GetCenterY());
+
+        break;
+      }
+    }
+
 
   }
 

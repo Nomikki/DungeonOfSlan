@@ -68,8 +68,6 @@ export class PlayerAI extends Ai {
     return undefined;
   }
 
-
-
   async handleActionKey(owner: Actor, key: string) {
 
     const useItem = async () => {
@@ -80,7 +78,7 @@ export class PlayerAI extends Ai {
       }
     };
 
-    if (key === "g") {
+    const pickupItem = async () => {
       let found = false;
       for (let i = 0; i < game.actors.length; i++) {
         const actor = game.actors[i];
@@ -98,10 +96,25 @@ export class PlayerAI extends Ai {
       if (!found) {
         console.log("Nothing here that you can pick up.");
       }
-    }
+    };
 
-    if (key === "i") {
+    const handleNextLevel = async() => {
+      if (game.level?.stairs.x === owner.pos.x && game.level?.stairs.y === owner.pos.y)
+      {
+        game.nextLevel();
+      } else {
+        console.log("There is no any stairs here.");
+      }
+    };
+
+    if (key === "g") {
+      await pickupItem();
+    }
+    else if (key === "i") {
       await useItem();
+    } else if (key == ">")
+    {
+      await handleNextLevel();
     }
   }
 

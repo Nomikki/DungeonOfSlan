@@ -257,6 +257,9 @@ export class Game {
       color = "#FFAA00";
       character = '#';
       pickableType = new LightningBold(10, 15);
+    } else if (name === "Stairs") {
+      color = "#FFFFFF";
+      character = '>';
     }
 
     this.addUnit(name, x, y, character, color);
@@ -288,6 +291,8 @@ export class Game {
       this.player.attacker = new Attacker(attackPower);
       ensure(this.player).ai = new PlayerAI();
       this.player.container = new Container(26);
+
+      this.player.pos = ensure(this.level).startPosition;
       return;
     }
 
@@ -310,6 +315,21 @@ export class Game {
 
   init() {
     this.level = new Level(80, 40);
+  }
+
+  async nextLevel() {
+    console.log("You take steps down.");
+    this.level = undefined;
+    const tempPlayer = this.player as Actor;
+    this.actors = [];
+    this.level = new Level(80, 40);
+    this.depth++;
+    this.level?.generateMap(this.masterSeed, this.depth);
+    this.actors.push(tempPlayer);
+
+    ensure(this.player).pos = ensure(this.level).startPosition;
+    this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
+
   }
 
   newGame() {
@@ -344,6 +364,9 @@ export class Game {
     this.addAI("Orc", 14, 12);
     this.addItem("Healing potion", 6, 6);
     this.addItem("Scroll of lightning bolt", 10, 6);
+    this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
+
+
 
 
   }
