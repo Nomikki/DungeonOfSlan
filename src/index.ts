@@ -8,6 +8,7 @@ import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
 import Level from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
+import { Camera } from "./utils/camera";
 import { Log } from "./utils/log";
 import vec2 from "./utils/vec2";
 
@@ -38,6 +39,7 @@ export class Game {
   actors: Actor[];
   player?: Actor;
   log?: Log;
+  camera?: Camera;
 
   constructor() {
     this.canvas = ensure(document.querySelector("#screen"));
@@ -48,6 +50,7 @@ export class Game {
     this.lastKey = "";
     this.actors = [];
     this.log = new Log(10);
+    this.camera = new Camera();
 
 
   }
@@ -178,6 +181,14 @@ export class Game {
     return tempKey;
   }
 
+  renderUI() {
+    this.drawText(`Syvyys: ${this.depth}`, float2int(this.width / this.fontSize) - 10, 0, "#FFF");
+    this.drawText(`HP: ${this.player?.destructible?.HP} / ${this.player?.destructible?.maxHP}`, 1, 0, "#FFF");
+    this.drawText(`AC: ${this.player?.destructible?.defense}`, 1, 1, "#FFF");
+
+    this.renderVersion();
+  }
+
   render() {
     this.clear(new Color(0x3, 0x3, 0x5));
 
@@ -187,7 +198,8 @@ export class Game {
     }
 
     this.log?.render();
-    this.renderVersion();
+    
+    this.renderUI();
   }
 
   getClosestEnemy(pos: vec2, range: number) {
@@ -236,7 +248,8 @@ export class Game {
 
 
     ensure(this.player).computeFov();
-
+    
+    this.camera?.update(ensure(this.player));
     this.render();
 
     while (true) {
@@ -252,6 +265,7 @@ export class Game {
       */
 
       await ensure(this.player).update();
+      this.camera?.update(ensure(this.player));
 
       for (let i = 0; i < this.actors.length; i++) {
         if (this.actors[i] != this.player) {

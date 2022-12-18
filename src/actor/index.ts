@@ -1,3 +1,4 @@
+import { ensure } from "@/utils";
 import vec2 from "@/utils/vec2";
 import { game } from "..";
 import Ai, { MonsterAi, PlayerAI } from "./ai";
@@ -58,6 +59,10 @@ export default class Actor {
   Render() {
     const fov = game.player?.fov && game.player.fov.isInFov(this.pos);
     if (fov === 2 || (fov != 0 && this.blockFov == true))
-      game.drawChar(this.ch, this.pos.x, this.pos.y, this.color);
+    {
+      const px = this.pos.x - ensure(game.camera).x;
+      const py = this.pos.y - ensure(game.camera).y;
+      game.drawChar(this.ch, px, py, this.color);
+    }
   }
 }
