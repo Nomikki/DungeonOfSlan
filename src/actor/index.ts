@@ -4,6 +4,7 @@ import Ai, { MonsterAi, PlayerAI } from "./ai";
 import { Attacker } from "./attacker";
 import { Container } from "./container";
 import { ItemDestructible, MonsterDestructible, PlayerDestructible } from "./destructible";
+import { FieldOfView } from "./fov";
 import { Pickable } from "./pickable";
 
 export default class Actor {
@@ -20,6 +21,7 @@ export default class Actor {
   attacker?: Attacker;
   container?: Container;
   pickable?: Pickable;
+  fov?: FieldOfView;
 
 
   constructor(name: string, ch: string, color: string) {
@@ -39,6 +41,13 @@ export default class Actor {
     }
   }
 
+  async computeFov() {
+    if (this.fov)
+    {
+      this.fov.calculate(this, 10);
+    }
+  }
+
 
   getDistance(pos: vec2): number {
     const dx = this.pos.x - pos.x;
@@ -47,6 +56,8 @@ export default class Actor {
   }
 
   Render() {
-    game.drawChar(this.ch, this.pos.x, this.pos.y, this.color);
+    const fov = game.player?.fov && game.player.fov.isInFov(this.pos);
+    if (fov === 2 || (fov != 0 && this.blockFov == true))
+      game.drawChar(this.ch, this.pos.x, this.pos.y, this.color);
   }
 }

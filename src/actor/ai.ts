@@ -40,7 +40,11 @@ export class PlayerAI extends Ai {
 
     if (dx != 0 || dy != 0) {
       if (await this.moveOrAttack(owner, new vec2(owner.pos.x + dx, owner.pos.y + dy))) {
-        console.log("compute fov");
+        //console.log("compute fov");
+        if (owner.fov) {
+          await owner.computeFov();
+        }
+
       }
     }
 

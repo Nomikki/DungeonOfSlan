@@ -4,6 +4,7 @@ import { MonsterAi, PlayerAI } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
 import { Container } from "./actor/container";
 import { MonsterDestructible, PlayerDestructible } from "./actor/destructible";
+import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
 import Level from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
@@ -210,6 +211,10 @@ export class Game {
   }
 
   async gameLoop() {
+
+
+    ensure(this.player).computeFov();
+
     this.render();
 
     while (true) {
@@ -247,6 +252,7 @@ export class Game {
     let color = "#808080";
     let character = "?";
     let pickableType = undefined;
+    let blockFov = false;
 
     if (name === "Healing potion") {
       color = "#FF00FF";
@@ -260,10 +266,12 @@ export class Game {
     } else if (name === "Stairs") {
       color = "#FFFFFF";
       character = '>';
+      blockFov = true;
     }
 
     this.addUnit(name, x, y, character, color);
     const item = this.actors[this.actors.length - 1];
+    item.blockFov = blockFov;
 
     if (pickableType)
       item.pickable = pickableType;
@@ -291,6 +299,7 @@ export class Game {
       this.player.attacker = new Attacker(attackPower);
       ensure(this.player).ai = new PlayerAI();
       this.player.container = new Container(26);
+      this.player.fov = new FieldOfView(ensure(this.level).width, ensure(this.level).height);
 
       this.player.pos = ensure(this.level).startPosition;
       return;
@@ -319,6 +328,7 @@ export class Game {
 
   async nextLevel() {
     console.log("You take steps down.");
+    
     this.level = undefined;
     const tempPlayer = this.player as Actor;
     this.actors = [];
@@ -326,10 +336,13 @@ export class Game {
     this.depth++;
     this.level?.generateMap(this.masterSeed, this.depth);
     this.actors.push(tempPlayer);
-
+    
     ensure(this.player).pos = ensure(this.level).startPosition;
+    await this.player?.fov?.clearLos();
+    
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
-
+    
+    await this.player?.computeFov();
   }
 
   newGame() {

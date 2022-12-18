@@ -30,7 +30,6 @@ class PathNode {
 class Tile {
   type: TileTypes = TileTypes.unused;
   collide = false;
-  inFov = 0;
   color = "#000000";
   character = "?";
 }
@@ -374,10 +373,19 @@ export default class Level {
   render() {
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
-        if (this.tiles[x + y * this.width].collide == true)
-          game.drawChar("#", x, y, '#999');
-        else {
-          game.drawChar('.', x, y, '#999');
+        const fov = game.player?.fov?.isInFov(new vec2(x, y));
+        if (fov === 2) {
+          if (this.tiles[x + y * this.width].collide == true)
+            game.drawChar("#", x, y, '#999');
+          else {
+            game.drawChar('.', x, y, '#999');
+          }
+        } else if (fov === 1) {
+          if (this.tiles[x + y * this.width].collide == true)
+            game.drawChar("*", x, y, '#999');
+          else {
+            game.drawChar(' ', x, y, '#999');
+          }
         }
       }
     }
