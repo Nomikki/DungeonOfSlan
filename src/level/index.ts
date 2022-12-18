@@ -1,4 +1,4 @@
-import { ensure, float2int } from "@/utils";
+import { capitalize, ensure, float2int } from "@/utils";
 import Randomizer from "@/utils/random";
 import Rectangle from "@/utils/rectangle";
 import vec2 from "@/utils/vec2";
@@ -430,7 +430,7 @@ export default class Level {
 
 
   generateName() {
-    const listOfAdjectives = ["Suuren", "Mahtavan", "Tukahduttavan", "Kuristavan", "Muinaisen", "Ikuisen", "Loputtoman", "Armottoman", ""];
+    const listOfAdjectives = ["Suuren", "Mahtavan", "Tukahduttavan", "Kuristavan", "Muinaisen", "Ikuisen", "Loputtoman", "Armottoman"];
     const listOfFirstParts = ["Pelon", "Kuolon", "Varjojen", "Pimeyden", "Kurjuuden", "Tuskan", "Vihan", "Hulluuden", "Painajaisten", "Epätoivon"];
     const listOfSecondParts: string[] = ["luola", "pesä", "maa", "kehto", "kirkko", "temppeli", "lähde", "koti", "linna", "linnoitus"];
 
@@ -439,6 +439,8 @@ export default class Level {
       this.dungeonName = listOfAdjectives[random.getInt(0, listOfAdjectives.length)] + " ";
     }
     this.dungeonName += listOfFirstParts[random.getInt(0, listOfFirstParts.length)] + " " + listOfSecondParts[random.getInt(0, listOfFirstParts.length)];
+    this.dungeonName = capitalize(this.dungeonName.toLowerCase());
+    
   }
 
   render() {

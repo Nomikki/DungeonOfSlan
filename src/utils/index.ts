@@ -16,3 +16,7 @@ export const rgbToHex = (r: number, g: number, b: number): string => {
 export const float2int = (value: number): number => {
   return value >> 0;
 };
+
+export const capitalize = (text: string): string => {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
