@@ -327,6 +327,12 @@ export class Game {
       "Dungeon of Slan",
       `/?seed=${this.masterSeed}`,
     );
+    history.pushState(
+      {},
+      "Dungeon of Slan",
+      `${COMMIT_HASH !== "dev" ? "/DungeonfOfSlan" : ""}/?seed=${this.masterSeed}`,
+    );
+
 
     //this.masterSeed = 0;
     //for (let i = 0; i < 1000; i++) {

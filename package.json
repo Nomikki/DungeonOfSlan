@@ -1,8 +1,12 @@
 {
   "name": "dungeonofslan",
-  "version": "1.0.0",
+  "version": "0.0.000001",
   "description": "",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nomikki/dungeonofslan.git"
+  },
   "scripts": {
     "lint": "eslint . --ext .ts; exit 0",
     "lint:fix": "eslint . --ext .ts --fix",
