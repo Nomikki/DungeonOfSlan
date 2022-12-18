@@ -6,7 +6,7 @@ import webpack, { Configuration } from "webpack";
 
 const buildTime = new Date().toISOString();
 
-const frontendPort = parseInt(process.env.PORT || "3000");
+const frontendPort = parseInt(process.env.PORT || "8080");
 
 type Environment = "development" | "production" | "none";
 type WebpackPlugin = { apply(...args: unknown[]): void };
@@ -40,7 +40,7 @@ const config: Configuration = {
     }),
     new HtmlWebpackPlugin({
       filename: "index.html",
-      title: "Slan Roguelike",
+      title: "Dungeon of slan Roguelike",
       template: "src/static/index.html",
       favicon: "src/static/images/favicon.png",
       inject: true,
