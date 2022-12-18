@@ -1,5 +1,6 @@
 import "@/index.scss";
-import { ensure, rgbToHex } from "./utils";
+import Level from "./level";
+import { ensure, float2int, rgbToHex } from "./utils";
 
 export class Color {
   r = 0;
@@ -22,6 +23,9 @@ export class Game {
   lastKey: string;
   fontSize = 12;
 
+  masterSeed = 0;
+  depth = 0;
+  level?: Level;
 
   constructor() {
     this.canvas = ensure(document.querySelector("#screen"));
@@ -54,9 +58,10 @@ export class Game {
   }
 
   drawChar(ch: string, x: number, y: number, color = "#BBB") {
-    if (x < 0 || y < 0 || x > this.width || y > this.height) {
+    if (x < 0 || y < 0 || (x + 1) * this.fontSize >= this.width || (y + 1) * this.fontSize >= this.height) {
       return;
     }
+
 
     this.ctx.textAlign = "center";
     this.ctx.fillStyle = "#101010";
@@ -67,10 +72,12 @@ export class Game {
       this.fontSize,
     );
 
+
     this.ctx.fillStyle = color;
     this.ctx.fillText(ch, x * this.fontSize, y * this.fontSize + this.fontSize);
   }
 
+  /*
   drawRectangle(
     x: number,
     y: number,
@@ -95,6 +102,7 @@ export class Game {
 
     this.ctx.fillStyle = "#FFFFFFFF";
   }
+  */
 
   drawText(
     text: string,
@@ -138,27 +146,76 @@ export class Game {
     return tempKey;
   }
 
+
+
   async gameLoop() {
     while (true) {
-      
+
       this.clear(new Color(0, 0, 0));
 
+      this.level?.render();
       const k = await this.getch();
       if (k === "1") {
         console.log("1");
       } else {
         console.log("2");
       }
-      
+
       //this.putPixel(32, 32, new Color(255, 0, 0));
       //this.drawText("testi", 2, 3);
       //this.drawChar("@", 4, 4);
-      
+
     }
+  }
+
+  addUnit(name: string, x: number, y: number, character: string, color: string) {
+    console.log(name, x, y, character, color);
+  }
+
+  init() {
+    this.level = new Level(80, 40);
+  }
+
+  newGame() {
+    //this.masterSeed = 1337;
+    this.masterSeed = float2int(Math.random() * 0x7ffffff);
+
+    if (window.location.search) {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has("seed"))
+        this.masterSeed = parseInt(ensure(urlParams.get("seed")));
+    }
+
+    history.pushState(
+      {},
+      "Dungeon of Slan",
+      `/?seed=${this.masterSeed}`,
+    );
+
+    //this.masterSeed = 0;
+    //for (let i = 0; i < 1000; i++) {
+      //this.masterSeed = i;
+      //console.log(i);
+
+      this.level?.generateMap(this.masterSeed, this.depth);
+    //}
+    /*
+    console.log(`Welcome to ${this.level?.dungeonName}`);
+  }
+  */
+
+    this.addUnit("Hero", 4, 12, '@', "#FFFFFF");
+  }
+
+  load() {
+    // just placeholder
+    this.newGame();
   }
 
   async run() {
     console.log("Game is running");
+    this.init();
+    this.load();
     this.gameLoop();
   }
 }
