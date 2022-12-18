@@ -1,6 +1,8 @@
 import "@/index.scss";
 import Actor from "./actor";
 import { MonsterAi, PlayerAI } from "./actor/ai";
+import { Attacker } from "./actor/attacker";
+import { MonsterDestructible, PlayerDestructible } from "./actor/destructible";
 import Level from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
 import vec2 from "./utils/vec2";
@@ -164,6 +166,15 @@ export class Game {
 
   }
 
+  removeActor(actorToBeRemoved: Actor) {
+    this.actors = this.actors.filter(actor => actor !== actorToBeRemoved);
+  }
+
+  sendToBack(actor: Actor) {
+    this.removeActor(actor);
+    this.actors.unshift(actor);
+  }
+
   isWall(p: vec2): boolean {
     return ensure(this.level).isWall(p.x, p.y);
   }
@@ -214,13 +225,21 @@ export class Game {
   addAI(name: string, x: number, y: number) {
     let color = "#808080";
     let character = "?";
-
+    let hp = 10;
+    let defense = 2;
+    const corpseName = "carcass of " + name;
+    let attackPower = 1;
 
     if (name === "Hero") {
       color = "#FFF";
       character = "@";
+      hp = 15;
+      defense = 5;
+      attackPower = 5;
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
+      this.player.destructible = new PlayerDestructible(hp, defense, corpseName);
+      this.player.attacker = new Attacker(attackPower);
       ensure(this.player).ai = new PlayerAI();
       return;
     }
@@ -228,10 +247,17 @@ export class Game {
     if (name === "Orc") {
       character = 'O';
       color = "#00FF00";
+      hp = 7;
+      defense = 2;
+      attackPower = 2;
     }
-
+    
     this.addUnit(name, x, y, character, color);
-    this.actors[this.actors.length - 1].ai = new MonsterAi();
+    const monster = this.actors[this.actors.length-1];
+    monster.ai = new MonsterAi();
+    monster.attacker = new Attacker(attackPower);
+    monster.destructible = new MonsterDestructible(hp, defense, corpseName);
+
 
   }
 

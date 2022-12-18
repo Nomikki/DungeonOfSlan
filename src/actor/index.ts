@@ -1,6 +1,8 @@
 import vec2 from "@/utils/vec2";
 import { game } from "..";
 import Ai, { MonsterAi, PlayerAI } from "./ai";
+import { Attacker } from "./attacker";
+import { ItemDestructible, MonsterDestructible, PlayerDestructible } from "./destructible";
 
 export default class Actor {
   name: string;
@@ -12,6 +14,8 @@ export default class Actor {
   blockFov: boolean;
 
   ai?: Ai | PlayerAI | MonsterAi;
+  destructible?: PlayerDestructible | MonsterDestructible | ItemDestructible;
+  attacker?: Attacker;
 
   constructor(name: string, ch: string, color: string) {
     this.name = name;
