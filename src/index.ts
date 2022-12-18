@@ -400,17 +400,16 @@ export class Game {
     );
 
     //this.masterSeed = 0;
-    //for (let i = 0; i < 1000; i++) {
+    //for (let i = 0; i < 100; i++) {
     //this.masterSeed = i;
     //console.log(i);
 
     this.level?.generateMap(this.masterSeed, this.depth);
-    //}
     /*
     console.log(`Welcome to ${this.level?.dungeonName}`);
-    
-  }
-  */
+    }
+    */
+  
 
     this.addAI("Hero", 4, 12);
     this.addAI("Orc", 14, 12);
@@ -421,6 +420,7 @@ export class Game {
   this.log?.addToLog(`${this.level?.dungeonName} on täynnä vaaroja.`, "#FF2222");
   this.log?.addToLog(`Pidä varasi!`, "#FF2222");
 
+  
 
   }
 

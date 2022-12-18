@@ -348,10 +348,16 @@ export default class Level {
 
 
   generateName() {
+    const listOfAdjectives = ["Suuren", "Mahtavan", "Tukahduttavan", "Kuristavan", "Muinaisen", "Ikuisen", "Loputtoman", "Armottoman", ""];    
     const listOfFirstParts = ["Pelon", "Kuolon", "Varjojen", "Pimeyden", "Kurjuuden", "Tuskan", "Vihan", "Hulluuden", "Painajaisten", "Epätoivon"];
-    const listOfSecondParts: string[] = ["luola", "pesä", "tyrmä", "kehto", "kirkko", "temppeli", "lähde", "koti", "linna", "linnoitus"];
+    const listOfSecondParts: string[] = ["luola", "pesä", "maa", "kehto", "kirkko", "temppeli", "lähde", "koti", "linna", "linnoitus"];
 
-    this.dungeonName = listOfFirstParts[random.getInt(0, listOfFirstParts.length)] + " " + listOfSecondParts[random.getInt(0, listOfFirstParts.length)];
+    this.dungeonName = "";
+    if (random.getInt(0, 10) >= 8)
+    {
+      this.dungeonName = listOfAdjectives[random.getInt(0, listOfAdjectives.length)] + " ";
+    }
+    this.dungeonName += listOfFirstParts[random.getInt(0, listOfFirstParts.length)] + " " + listOfSecondParts[random.getInt(0, listOfFirstParts.length)];
   }
 
   render() {
