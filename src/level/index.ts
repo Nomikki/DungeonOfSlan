@@ -348,10 +348,10 @@ export default class Level {
 
 
   generateName() {
-    const listOfFirstParts: string[] = ["Cave", "Grotto", "Cavern", "Dungeon", "Crypt", "Church", "Temple"];
-    const listOfSecondParts = ["Fear", "Death", "Shadows", "Darkness", "Misery", "Pain", "Hatred", "Madness", "Nightmares", "Despair"];
+    const listOfFirstParts = ["Pelon", "Kuolon", "Varjojen", "Pimeyden", "Kurjuuden", "Tuskan", "Vihan", "Hulluuden", "Painajaisten", "Epätoivon"];
+    const listOfSecondParts: string[] = ["luola", "pesä", "tyrmä", "kehto", "kirkko", "temppeli", "lähde", "koti", "linna", "linnoitus"];
 
-    this.dungeonName = "The " + listOfFirstParts[random.getInt(0, listOfFirstParts.length)] + " of " + listOfSecondParts[random.getInt(0, listOfFirstParts.length)];
+    this.dungeonName = listOfFirstParts[random.getInt(0, listOfFirstParts.length)] + " " + listOfSecondParts[random.getInt(0, listOfFirstParts.length)];
   }
 
   render() {

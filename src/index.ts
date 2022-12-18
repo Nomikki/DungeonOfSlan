@@ -182,6 +182,7 @@ export class Game {
   }
 
   renderUI() {
+    
     this.drawText(`Syvyys: ${this.depth}`, float2int(this.width / this.fontSize) - 10, 0, "#FFF");
     this.drawText(`HP: ${this.player?.destructible?.HP} / ${this.player?.destructible?.maxHP}`, 1, 0, "#FFF");
     this.drawText(`AC: ${this.player?.destructible?.defense}`, 1, 1, "#FFF");
@@ -379,6 +380,7 @@ export class Game {
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
     
     await this.player?.computeFov();
+
   }
 
   newGame() {
@@ -406,6 +408,7 @@ export class Game {
     //}
     /*
     console.log(`Welcome to ${this.level?.dungeonName}`);
+    
   }
   */
 
@@ -415,7 +418,8 @@ export class Game {
     this.addItem("Scroll of lightning bolt", 10, 6);
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
 
-
+  this.log?.addToLog(`${this.level?.dungeonName} on täynnä vaaroja.`, "#FF2222");
+  this.log?.addToLog(`Pidä varasi!`, "#FF2222");
 
 
   }
