@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Nomikki/dungeonofslan.git"
+    "url": "git+https://github.com/Nomikki/DungeonOfSlan.git"
   },
   "scripts": {
     "lint": "eslint . --ext .ts; exit 0",

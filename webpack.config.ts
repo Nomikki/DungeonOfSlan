@@ -40,7 +40,7 @@ const config: Configuration = {
     }),
     new HtmlWebpackPlugin({
       filename: "index.html",
-      title: "Dungeon of slan Roguelike",
+      title: "Dungeon of slan",
       template: "src/static/index.html",
       favicon: "src/static/images/favicon.png",
       inject: true,
