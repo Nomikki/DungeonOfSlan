@@ -2,6 +2,7 @@ import "@/index.scss";
 import Actor from "./actor";
 import { MonsterAi, PlayerAI } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
+import { Container } from "./actor/container";
 import { MonsterDestructible, PlayerDestructible } from "./actor/destructible";
 import Level from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
@@ -163,7 +164,23 @@ export class Game {
     for (let i = 0; i < this.actors.length; i++) {
       this.actors[i].Render();
     }
+  }
 
+  getClosestEnemy(pos: vec2, range: number) {
+    let closest: Actor | undefined;
+    let bestDistance = 10000;
+
+    for (let i = 0; i < this.actors.length; i++) {
+      const actor = this.actors[i];
+      const distance = actor.getDistance(pos);
+      if (distance < bestDistance && (distance <= range || range === 0)) {
+        bestDistance = distance;
+        closest = actor;
+      }
+    }
+
+
+    return closest;
   }
 
   removeActor(actorToBeRemoved: Actor) {
@@ -241,6 +258,7 @@ export class Game {
       this.player.destructible = new PlayerDestructible(hp, defense, corpseName);
       this.player.attacker = new Attacker(attackPower);
       ensure(this.player).ai = new PlayerAI();
+      this.player.container = new Container(26);
       return;
     }
 
@@ -251,9 +269,9 @@ export class Game {
       defense = 2;
       attackPower = 2;
     }
-    
+
     this.addUnit(name, x, y, character, color);
-    const monster = this.actors[this.actors.length-1];
+    const monster = this.actors[this.actors.length - 1];
     monster.ai = new MonsterAi();
     monster.attacker = new Attacker(attackPower);
     monster.destructible = new MonsterDestructible(hp, defense, corpseName);
