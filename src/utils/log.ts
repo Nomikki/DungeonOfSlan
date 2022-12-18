@@ -57,7 +57,7 @@ export class Log {
       if (i >= 0) {
         const id = this.texts.length - a - 1;
         const finalText = this.texts[id].amount === 1 ? this.texts[id].text : this.texts[id].text + ` (${this.texts[id].amount})`;
-        game.drawText(finalText, 1, ensure(game.level).height - a, this.texts[i].color);
+        game.drawText(finalText, 1, ensure(game.level).height - a, this.texts[id].color);
         a++;
       }
     }

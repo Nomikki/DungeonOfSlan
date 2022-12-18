@@ -45,6 +45,7 @@ export default class Level {
   levelSeed = 0;
 
   tiles: Tile[];
+  noisemap: number[];
   pathMap: number[];
   nodeTemp: PathNode[];
   nodes: PathNode[];
@@ -61,6 +62,7 @@ export default class Level {
     this.dungeonName = "Unknow dungeon";
 
     this.tiles = new Array(this.width * this.height).fill(false);
+    this.noisemap = new Array(this.width * this.height).fill(0);
     this.pathMap = new Array(this.width * this.height);
     this.nodeTemp = [];
     this.nodes = [];
@@ -281,11 +283,9 @@ export default class Level {
     this.tiles = new Array(this.width * this.height).fill(false);
     for (let i = 0; i < this.width * this.height; i++)
       this.tiles[i] = new Tile();
-
-
-    //const maxSplitLevel = random.getInt(4, 8);
-
-    const root = new bspGenerator(3, 3, this.width - 4, this.height - 4, 8);
+    const splitAmount = random.getInt(3, 8);
+    console.log("splitted to " + splitAmount);
+    const root = new bspGenerator(3, 3, this.width - 4, this.height - 4, splitAmount);
 
 
     for (let i = 0; i < root.rooms.length; i++) {
@@ -313,6 +313,8 @@ export default class Level {
       }
     }
 
+
+
     for (let i = 0; i < this.nodeTemp.length; i++) {
       const node = this.nodeTemp[i];
       this.setFloor(node.x, node.y);
@@ -324,6 +326,21 @@ export default class Level {
     }
 
     this.fillUnusedTiles();
+    /*
+    {
+      this.smoothMap();
+
+      for (let i = 0; i < this.nodeTemp.length; i++) {
+        const node = this.nodeTemp[i];
+        this.setFloor(node.x, node.y);
+      }
+
+      for (let i = 0; i < failedCorridos.length; i++) {
+        const corridor = failedCorridos[i];
+        this.createNaivePath(corridor.x, corridor.y, corridor.w, corridor.h);
+      }
+    }
+    */
 
     //set start and end
     const startRoom = random.getInt(0, root.rooms.length);
@@ -347,14 +364,78 @@ export default class Level {
   }
 
 
+  howManyWalls2(x: number, y: number): number {
+    if (x > 0 && y > 0 && x < this.width - 1 && y < this.height - 1) {
+      let count = 0;
+      for (let lx = x - 1; lx <= x + 1; lx++)
+        for (let ly = y - 1; ly <= y + 1; ly++)
+          if (this.noisemap[lx + ly * this.width] === 1) count++;
+
+      return count;
+    }
+
+    return 0;
+  }
+
+  placeWallLogic(x: number, y: number): number {
+    const numWalls = this.howManyWalls2(x, y);
+    if (this.isWall(x, y)) {
+      if (numWalls >= 4) return 1;
+      if (numWalls < 2) return 0;
+    } else {
+      if (numWalls >= 5) return 1;
+    }
+    return 0;
+  }
+
+  async smoothMap() {
+    const itermap = new Array(this.width * this.height).fill(0);
+
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        this.noisemap[x + y * this.width] = this.isWall(x, y) ? 0 : 1;
+      }
+    }
+
+
+    const iterAmount = 3; //random.getInt(1, 6);
+    console.log("cavern iters: ", iterAmount);
+    for (let l = 0; l < iterAmount; l++) {
+      for (let y = 1; y < this.height - 1; y++) {
+        for (let x = 1; x < this.width - 1; x++) {
+          itermap[x + y * this.width] = this.placeWallLogic(x, y);
+        }
+      }
+      for (let i = 0; i < this.width * this.height; i++) {
+        this.noisemap[i] = itermap[i];
+      }
+    }
+
+    //add to map
+    for (let y = 1; y < this.height - 1; y++) {
+      for (let x = 1; x < this.width - 1; x++) {
+        //if (this.isWall(x, y) )
+        {
+          const index = x + y * this.width;
+          if (this.noisemap[index] !== 0) {
+            this.setFloor(x, y);
+          } else {
+            this.setWall(x, y);
+          }
+        }
+      }
+    }
+
+  }
+
+
   generateName() {
-    const listOfAdjectives = ["Suuren", "Mahtavan", "Tukahduttavan", "Kuristavan", "Muinaisen", "Ikuisen", "Loputtoman", "Armottoman", ""];    
+    const listOfAdjectives = ["Suuren", "Mahtavan", "Tukahduttavan", "Kuristavan", "Muinaisen", "Ikuisen", "Loputtoman", "Armottoman", ""];
     const listOfFirstParts = ["Pelon", "Kuolon", "Varjojen", "Pimeyden", "Kurjuuden", "Tuskan", "Vihan", "Hulluuden", "Painajaisten", "Epätoivon"];
     const listOfSecondParts: string[] = ["luola", "pesä", "maa", "kehto", "kirkko", "temppeli", "lähde", "koti", "linna", "linnoitus"];
 
     this.dungeonName = "";
-    if (random.getInt(0, 10) >= 8)
-    {
+    if (random.getInt(0, 10) >= 8) {
       this.dungeonName = listOfAdjectives[random.getInt(0, listOfAdjectives.length)] + " ";
     }
     this.dungeonName += listOfFirstParts[random.getInt(0, listOfFirstParts.length)] + " " + listOfSecondParts[random.getInt(0, listOfFirstParts.length)];
