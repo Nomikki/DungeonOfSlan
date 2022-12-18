@@ -328,7 +328,6 @@ export class Game {
       `${COMMIT_HASH !== "dev" ? "/DungeonOfSlan" : ""}/?seed=${this.masterSeed}`,
     );
 
-
     //this.masterSeed = 0;
     //for (let i = 0; i < 1000; i++) {
     //this.masterSeed = i;

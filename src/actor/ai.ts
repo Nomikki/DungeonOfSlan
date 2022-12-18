@@ -65,9 +65,7 @@ export class PlayerAI extends Ai {
     if (actorIndex >= 0 && actorIndex < ensure(owner.container).inventory.length) {
       return ensure(owner.container).inventory[actorIndex];
     }
-
     return undefined;
-
   }
 
 

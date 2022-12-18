@@ -10,8 +10,6 @@ class bspGenerator {
   rootContainer: Rectangle;
   rows: number;
   cols: number;
-  //map: number[];
-  //doorPlaces: Rectangle[];
   tempRooms: Rectangle[];
   corridos: Rectangle[];
   rooms: Rectangle[];
@@ -20,7 +18,7 @@ class bspGenerator {
   constructor(x: number, y: number, w: number, h: number, maxLevel = 5) {
     this.maxLevel = maxLevel;
 
-    this.rootContainer = new Rectangle(x+1, y+1, w-2, h-2);
+    this.rootContainer = new Rectangle(x + 1, y + 1, w - 2, h - 2);
 
     this.rows = h;
     this.cols = w;
@@ -124,7 +122,7 @@ class bspGenerator {
     const y2 = float2int(node.B.leaf.GetCenterY());
 
     //console.log(x1, y1, x2, y2);
-    corridos.push(new Rectangle(x1-1, y1-1, x2-1, y2-1));
+    corridos.push(new Rectangle(x1 - 1, y1 - 1, x2 - 1, y2 - 1));
 
     //game.level.halls.push()
 
