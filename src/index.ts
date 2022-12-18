@@ -1,6 +1,9 @@
 import "@/index.scss";
+import Actor from "./actor";
+import { MonsterAi, PlayerAI } from "./actor/ai";
 import Level from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
+import vec2 from "./utils/vec2";
 
 export class Color {
   r = 0;
@@ -26,13 +29,18 @@ export class Game {
   masterSeed = 0;
   depth = 0;
   level?: Level;
+  actors: Actor[];
+  player?: Actor;
 
   constructor() {
     this.canvas = ensure(document.querySelector("#screen"));
     this.ctx = ensure((this.canvas as HTMLCanvasElement).getContext("2d"));
+    this.ctx.font = `${this.fontSize}px system-ui`;
     this.width = 1024;
     this.height = 512;
     this.lastKey = "";
+    this.actors = [];
+
 
   }
 
@@ -146,30 +154,85 @@ export class Game {
     return tempKey;
   }
 
+  render() {
+    this.clear(new Color(0, 0, 0));
 
+    this.level?.render();
+    for (let i = 0; i < this.actors.length; i++) {
+      this.actors[i].Render();
+    }
+
+  }
+
+  isWall(p: vec2): boolean {
+    return ensure(this.level).isWall(p.x, p.y);
+  }
+
+  canWalk(p: vec2): boolean {
+    if (this.isWall(p) == true)
+      return false;
+
+    for (let i = 0; i < this.actors.length; i++) {
+      if (this.actors[i].blocks && this.actors[i].pos === p)
+        return false;
+    }
+
+    return true;
+  }
 
   async gameLoop() {
     while (true) {
+      this.render();
 
-      this.clear(new Color(0, 0, 0));
+      //const oldKey = this.lastKey;
+      this.lastKey = await this.getch();
 
-      this.level?.render();
-      const k = await this.getch();
-      if (k === "1") {
-        console.log("1");
-      } else {
-        console.log("2");
+      /*
+      if (oldKey != this.lastKey)
+      {
+        
       }
+      */
 
-      //this.putPixel(32, 32, new Color(255, 0, 0));
-      //this.drawText("testi", 2, 3);
-      //this.drawChar("@", 4, 4);
+      ensure(this.player).update();
 
+      for (let i = 0; i < this.actors.length; i++) {
+        if (this.actors[i] != this.player) {
+          this.actors[i].update();
+        }
+      }
     }
   }
 
   addUnit(name: string, x: number, y: number, character: string, color: string) {
-    console.log(name, x, y, character, color);
+    const actor = new Actor(name, character, color);
+    actor.pos.x = x;
+    actor.pos.y = y;
+    this.actors.push(actor);
+  }
+
+  addAI(name: string, x: number, y: number) {
+    let color = "#808080";
+    let character = "?";
+
+
+    if (name === "Hero") {
+      color = "#FFF";
+      character = "@";
+      this.addUnit(name, x, y, character, color);
+      this.player = this.actors[this.actors.length - 1];
+      ensure(this.player).ai = new PlayerAI();
+      return;
+    }
+
+    if (name === "Orc") {
+      character = 'O';
+      color = "#00FF00";
+    }
+
+    this.addUnit(name, x, y, character, color);
+    this.actors[this.actors.length - 1].ai = new MonsterAi();
+
   }
 
   init() {
@@ -194,17 +257,20 @@ export class Game {
 
     //this.masterSeed = 0;
     //for (let i = 0; i < 1000; i++) {
-      //this.masterSeed = i;
-      //console.log(i);
+    //this.masterSeed = i;
+    //console.log(i);
 
-      this.level?.generateMap(this.masterSeed, this.depth);
+    this.level?.generateMap(this.masterSeed, this.depth);
     //}
     /*
     console.log(`Welcome to ${this.level?.dungeonName}`);
   }
   */
 
-    this.addUnit("Hero", 4, 12, '@', "#FFFFFF");
+    this.addAI("Hero", 4, 12);
+    this.addAI("Orc", 14, 12);
+
+
   }
 
   load() {
