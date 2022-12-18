@@ -151,15 +151,15 @@ export class PlayerAI extends Ai {
 
 
 export class MonsterAi extends Ai {
-  update(owner: Actor) {
+  async update(owner: Actor) {
     //if destructible and alive
     if (owner.destructible && owner.destructible.isDead())
       return;
 
-    this.moveOrAttack(owner, ensure(game.player).pos);
+    await this.moveOrAttack(owner, ensure(game.player).pos);
   }
 
-  moveOrAttack(owner: Actor, target: vec2) {
+  async moveOrAttack(owner: Actor, target: vec2) {
     let dx = target.x - owner.pos.x;
     let dy = target.y - owner.pos.y;
     const stepdx = (dx > 0 ? 1 : -1);
@@ -167,12 +167,12 @@ export class MonsterAi extends Ai {
 
     const distance = float2int(Math.sqrt(dx * dx + dy * dy));
     if (distance >= 2) {
-      dx = float2int(dx / distance);
-      dy = float2int(dy / distance);
+      dx = float2int(Math.round(dx / distance));
+      dy = float2int(Math.round(dy / distance));
 
       const p = new vec2(owner.pos.x + dx, owner.pos.y + dy);
       const p2 = new vec2(owner.pos.x + stepdx, owner.pos.y);
-      const p3 = new vec2(owner.pos.x, owner.pos.y + stepdx);
+      const p3 = new vec2(owner.pos.x, owner.pos.y + stepdy);
 
       if (game.canWalk(p)) {
         owner.pos.x += dx;

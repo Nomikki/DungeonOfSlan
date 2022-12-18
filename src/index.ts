@@ -81,7 +81,7 @@ export class Game {
 
     this.drawText(
       `${versionText}`,
-       80 - versionText.length,
+      80 - versionText.length,
       this.ctx.canvas.height / this.fontSize - 2,
       "#808080",
     );
@@ -140,8 +140,7 @@ export class Game {
     y: number,
     color = "#909090",
   ) {
-    for (let i = 0; i < text.length; i++)
-    {
+    for (let i = 0; i < text.length; i++) {
       this.drawChar(text.charAt(i), x + i, y, color);
     }
     /*
@@ -182,7 +181,7 @@ export class Game {
   }
 
   renderUI() {
-    
+
     this.drawText(`Syvyys: ${this.depth}`, float2int(this.width / this.fontSize) - 10, 0, "#FFF");
     this.drawText(`HP: ${this.player?.destructible?.HP} / ${this.player?.destructible?.maxHP}`, 1, 0, "#FFF");
     this.drawText(`AC: ${this.player?.destructible?.defense}`, 1, 1, "#FFF");
@@ -199,7 +198,7 @@ export class Game {
     }
 
     this.log?.render();
-    
+
     this.renderUI();
   }
 
@@ -234,11 +233,11 @@ export class Game {
   }
 
   canWalk(p: vec2): boolean {
-    if (this.isWall(p) == true)
+    if (this.isWall(p))
       return false;
 
     for (let i = 0; i < this.actors.length; i++) {
-      if (this.actors[i].blocks && this.actors[i].pos === p)
+      if (this.actors[i].blocks && this.actors[i].pos.x === p.x && this.actors[i].pos.y === p.y)
         return false;
     }
 
@@ -249,7 +248,7 @@ export class Game {
 
 
     ensure(this.player).computeFov();
-    
+
     this.camera?.update(ensure(this.player));
     this.render();
 
@@ -365,7 +364,7 @@ export class Game {
 
   async nextLevel() {
     this.log?.addToLog("Menit yhden tason alemmas.", "#999");
-    
+
     this.level = undefined;
     const tempPlayer = this.player as Actor;
     this.actors = [];
@@ -373,12 +372,12 @@ export class Game {
     this.depth++;
     this.level?.generateMap(this.masterSeed, this.depth);
     this.actors.push(tempPlayer);
-    
+
     ensure(this.player).pos = ensure(this.level).startPosition;
     await this.player?.fov?.clearLos();
-    
+
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
-    
+
     await this.player?.computeFov();
 
   }
@@ -409,7 +408,7 @@ export class Game {
     console.log(`Welcome to ${this.level?.dungeonName}`);
     }
     */
-  
+
 
     this.addAI("Hero", 4, 12);
     this.addAI("Orc", 14, 12);
@@ -417,10 +416,10 @@ export class Game {
     this.addItem("Scroll of lightning bolt", 10, 6);
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
 
-  this.log?.addToLog(`${this.level?.dungeonName} on täynnä vaaroja.`, "#FF2222");
-  this.log?.addToLog(`Pidä varasi!`, "#FF2222");
+    this.log?.addToLog(`${this.level?.dungeonName} on täynnä vaaroja.`, "#FF2222");
+    this.log?.addToLog(`Pidä varasi!`, "#FF2222");
 
-  
+
 
   }
 
