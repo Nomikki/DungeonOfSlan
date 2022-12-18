@@ -77,7 +77,7 @@ export class Game {
 
 
     this.ctx.textAlign = "center";
-    this.ctx.fillStyle = "#101010";
+    this.ctx.fillStyle = "#100A14";
     this.ctx.fillRect(
       x * this.fontSize - this.fontSize / 2,
       y * this.fontSize,
@@ -160,7 +160,7 @@ export class Game {
   }
 
   render() {
-    this.clear(new Color(0, 0, 0));
+    this.clear(new Color(0x3, 0x3, 0x5));
 
     this.level?.render();
     for (let i = 0; i < this.actors.length; i++) {
