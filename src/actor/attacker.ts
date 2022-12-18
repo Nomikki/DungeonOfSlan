@@ -1,3 +1,4 @@
+import { random } from "@/level";
 import Actor from ".";
 import { game } from "..";
 
@@ -10,12 +11,14 @@ export class Attacker {
 
   attack(owner: Actor, target: Actor) {
     if (target.destructible && !target.destructible.isDead()) {
-      if (this.power - target.destructible.defense > 0) {
-        game.log?.addToLog(`${owner.name} hyökkää. ${target.name} ottaa ${this.power} vahinkoa`, "#999");
+      const currentPower = random.getInt(0, this.power);
+
+      if (currentPower - target.destructible.defense > 0) {
+        game.log?.addToLog(`${owner.name} hyökkää. ${target.name} ottaa ${currentPower} vahinkoa`, "#FFF");
       } else {
-        game.log?.addToLog(`${owner.name} hyökkää, mutta ${target.name} väistää iskun.`, "#999");
+        game.log?.addToLog(`${owner.name} hyökkää, mutta ${target.name} väistää iskun.`, "#AAA");
       }
-      target.destructible.TakeDamage(target, this.power);
+      target.destructible.TakeDamage(target, currentPower);
     }
   }
 }

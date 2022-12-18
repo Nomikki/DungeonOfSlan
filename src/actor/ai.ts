@@ -182,6 +182,8 @@ export class MonsterAi extends Ai {
       } else if (game.canWalk(p3)) {
         owner.pos.y += stepdy;
       }
+    } else {
+      owner.attacker?.attack(owner, ensure(game.player));
     }
 
   }

@@ -19,7 +19,7 @@ export class Destructible {
   }
 
   TakeDamage(owner: Actor, damage: number): number {
-    damage = this.defense;
+    damage -= this.defense;
     if (damage > 0) {
       this.HP -= damage;
       if (this.HP <= 0) {
