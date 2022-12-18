@@ -1,4 +1,5 @@
 import Actor from ".";
+import { game } from "..";
 
 export class Attacker {
   power: number;
@@ -10,9 +11,9 @@ export class Attacker {
   attack(owner: Actor, target: Actor) {
     if (target.destructible && !target.destructible.isDead()) {
       if (this.power - target.destructible.defense > 0) {
-        console.log(`${owner.name} attacks ${target.name} for ${this.power} points.`);
+        game.log?.addToLog(`${owner.name} hyökkää. ${target.name} ottaa ${this.power} vahinkoa`, "#999");
       } else {
-        console.log(`${owner.name} attacks ${target.name} but it has no effect.`);
+        game.log?.addToLog(`${owner.name} hyökkää, mutta ${target.name} väistää iskun.`, "#999");
       }
       target.destructible.TakeDamage(target, this.power);
     }

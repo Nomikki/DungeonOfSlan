@@ -52,15 +52,14 @@ export class LightningBold extends Pickable {
 
 
   use(owner: Actor, wearer: Actor): boolean {
-    //console.log(`${owner.name} used by ${wearer.name}`)
     const closestEnemy = game.getClosestEnemy(wearer.pos, this.range);
     if (!closestEnemy) {
-      console.log("No enemy is close enought to strike");
+      game.log?.addToLog(`Ei yhtään vihollista tarpeeksi lähellä.`, "#999");
+
       return false;
     }
 
-    console.log(`A lightning bolt strikes ${closestEnemy.name}`);
-    console.log(`The damage is ${this.damage} points.`);
+    game.log?.addToLog(`Salama iskee ja ${closestEnemy.name} ottaa ${this.damage} verran vahinkoa`, "#999");
     closestEnemy.destructible?.TakeDamage(closestEnemy, this.damage);
 
     return super.use(owner, wearer);

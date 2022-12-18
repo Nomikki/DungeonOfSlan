@@ -57,7 +57,7 @@ export class MonsterDestructible extends Destructible {
   }
 
   Die(owner: Actor) {
-    console.log(`${owner.name} is dead`);
+    game.log?.addToLog(`${owner.name} kuoli`, "#999");
     super.Die(owner);
   }
 }
@@ -68,7 +68,7 @@ export class PlayerDestructible extends Destructible {
   }
 
   Die(owner: Actor) {
-    console.log("You died!");
+    game.log?.addToLog(`Sinä kuolit`, "#900");
     super.Die(owner);
   }
 }
@@ -80,7 +80,8 @@ export class ItemDestructible extends Destructible {
   }
 
   Die(owner: Actor) {
-    console.log(`${owner.name} is smashed`);
+    game.log?.addToLog(`${owner.name} räjähti!`, "#999");
+
     super.Die(owner);
   }
 }

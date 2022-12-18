@@ -21,7 +21,6 @@ export class PlayerAI extends Ai {
 
     let dx = 0;
     let dy = 0;
-    //console.log(game.lastKey);
 
     if (game.lastKey === "ArrowLeft") {
       dx = -1;
@@ -40,7 +39,6 @@ export class PlayerAI extends Ai {
 
     if (dx != 0 || dy != 0) {
       if (await this.moveOrAttack(owner, new vec2(owner.pos.x + dx, owner.pos.y + dy))) {
-        //console.log("compute fov");
         if (owner.fov) {
           await owner.computeFov();
         }
@@ -64,7 +62,6 @@ export class PlayerAI extends Ai {
     }
 
     const ch = await game.getch();
-    console.log(`ch: ${ch}`);
     const actorIndex = ch.charCodeAt(0) - 97; // 97 = a
     if (actorIndex >= 0 && actorIndex < ensure(owner.container).inventory.length) {
       return ensure(owner.container).inventory[actorIndex];
@@ -77,7 +74,7 @@ export class PlayerAI extends Ai {
     const useItem = async () => {
       const actor = await this.chooseFromInventory(owner);
       if (actor) {
-        console.log(`You use a ${actor.name}`);
+        game.log?.addToLog(`Käytit esineen ${actor.name}`, "#999");
         ensure(actor.pickable).use(actor, owner);
       }
     };
@@ -89,25 +86,24 @@ export class PlayerAI extends Ai {
 
         if (actor.pickable && actor.pos.x === owner.pos.x && actor.pos.y === owner.pos.y) {
           if (actor.pickable.pick(actor, owner)) {
-            console.log(`You pick the ${actor.name}`);
+            game.log?.addToLog(`Nostit esineen ${actor.name}`, "#999");
             found = true;
             break;
           } else if (!found) {
-            console.log(`Your inventory is full`);
+            game.log?.addToLog(`Sinun laukkusi on täynnä.`, "#999");
           }
         }
       }
       if (!found) {
-        console.log("Nothing here that you can pick up.");
+        game.log?.addToLog(`Tässä ei ole mitään poimittavaa.`, "#999");
       }
     };
 
-    const handleNextLevel = async() => {
-      if (game.level?.stairs.x === owner.pos.x && game.level?.stairs.y === owner.pos.y)
-      {
+    const handleNextLevel = async () => {
+      if (game.level?.stairs.x === owner.pos.x && game.level?.stairs.y === owner.pos.y) {
         game.nextLevel();
       } else {
-        console.log("There is no any stairs here.");
+        game.log?.addToLog(`Tässä ei ole portaita.`, "#999");
       }
     };
 
@@ -116,8 +112,7 @@ export class PlayerAI extends Ai {
     }
     else if (key === "i") {
       await useItem();
-    } else if (key == ">")
-    {
+    } else if (key == ">") {
       await handleNextLevel();
     }
   }
@@ -139,10 +134,10 @@ export class PlayerAI extends Ai {
     // look for corpses
     for (let i = 0; i < game.actors.length; i++) {
       const actor = game.actors[i];
-      const corpseOrItem = (actor.destructible && actor.destructible.isDead()) /*|| actor.pickable*/;
+      const corpseOrItem = (actor.destructible && actor.destructible.isDead()) || actor.pickable;
       if (corpseOrItem) {
         if (actor.pos.x === target.x && actor.pos.y === target.y) {
-          console.log(`There's a ${actor.name} here`);
+          game.log?.addToLog(`Tässä on ${actor.name}.`, "#999");
         }
       }
     }
@@ -172,7 +167,6 @@ export class MonsterAi extends Ai {
 
     const distance = float2int(Math.sqrt(dx * dx + dy * dy));
     if (distance >= 2) {
-      console.log(distance);
       dx = float2int(dx / distance);
       dy = float2int(dy / distance);
 
@@ -183,7 +177,6 @@ export class MonsterAi extends Ai {
       if (game.canWalk(p)) {
         owner.pos.x += dx;
         owner.pos.y += dy;
-        console.log(owner.pos);
       } else if (game.canWalk(p2)) {
         owner.pos.x += stepdx;
       } else if (game.canWalk(p3)) {

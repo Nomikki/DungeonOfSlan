@@ -8,6 +8,7 @@ import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
 import Level from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
+import { Log } from "./utils/log";
 import vec2 from "./utils/vec2";
 
 export class Color {
@@ -36,6 +37,7 @@ export class Game {
   level?: Level;
   actors: Actor[];
   player?: Actor;
+  log?: Log;
 
   constructor() {
     this.canvas = ensure(document.querySelector("#screen"));
@@ -45,6 +47,7 @@ export class Game {
     this.height = 512;
     this.lastKey = "";
     this.actors = [];
+    this.log = new Log(10);
 
 
   }
@@ -183,6 +186,7 @@ export class Game {
       this.actors[i].Render();
     }
 
+    this.log?.render();
     this.renderVersion();
   }
 
@@ -345,7 +349,7 @@ export class Game {
   }
 
   async nextLevel() {
-    console.log("You take steps down.");
+    this.log?.addToLog("Menit yhden tason alemmas.", "#999");
     
     this.level = undefined;
     const tempPlayer = this.player as Actor;
@@ -408,7 +412,6 @@ export class Game {
   }
 
   async run() {
-    console.log("Game is running");
     this.init();
     this.load();
     await this.gameLoop();

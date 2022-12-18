@@ -185,7 +185,6 @@ export default class Level {
 
   async setPathStart(x: number, y: number) {
     const id = this.convertXYtoID(x, y);
-    //console.log(id);
 
     if (id >= 0 && id < (this.width * this.height)) {
       this.pathMap[id] = 1;
@@ -204,16 +203,9 @@ export default class Level {
       this.pathMap[i] = this.tiles[i].collide ? -1 : 0;
     }
 
-    //console.log(sx, sy);
     this.setPathStart(sx, sy);
-
-    //console.log(this.pathMap);
-
-    //let cx = 0;
-    //let cy = 0;
+  
     let found = false;
-
-    //let id = this.convertXYtoID(sx, sy);
 
     let matka = 0; // pitää kirjaa matkasta joka on jo kuljettu
     for (let i = 0; i < maxLen; i++) { // montako 'askelta'
@@ -246,8 +238,6 @@ export default class Level {
     let x = ex;
     let y = ey;
 
-    //console.log("distance: " + matka);
-    //let a = 0;
     for (let i = 0; i < matka; i++) {
 
 
@@ -270,9 +260,6 @@ export default class Level {
 
 
       if (oldX !== x || oldY !== y) {
-        //console.log(a, x, y);
-        //a++;
-
         const nd = new PathNode();
         nd.x = x;
         nd.y = y;
@@ -280,9 +267,6 @@ export default class Level {
         this.nodes.push(nd);
       }
     }
-    //console.log(this.nodes.length);
-    //console.log(JSON.stringify(this.nodes, null, 2));
-
     return 0;
   }
 
@@ -320,7 +304,7 @@ export default class Level {
       this.createPath(corridor.x, corridor.y, corridor.w, corridor.h, 128);
 
       if (this.nodes.length == 0) {
-        console.log("fail");
+        //console.log("fail");
         failedCorridos.push(corridor);
       }
 
