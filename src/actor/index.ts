@@ -4,6 +4,7 @@ import Ai, { MonsterAi, PlayerAI } from "./ai";
 import { Attacker } from "./attacker";
 import { Container } from "./container";
 import { ItemDestructible, MonsterDestructible, PlayerDestructible } from "./destructible";
+import { Pickable } from "./pickable";
 
 export default class Actor {
   name: string;
@@ -18,6 +19,8 @@ export default class Actor {
   destructible?: PlayerDestructible | MonsterDestructible | ItemDestructible;
   attacker?: Attacker;
   container?: Container;
+  pickable?: Pickable;
+
 
   constructor(name: string, ch: string, color: string) {
     this.name = name;
@@ -30,9 +33,9 @@ export default class Actor {
     this.blockFov = false;
   }
 
-  update() {
+  async update() {
     if (this.ai) {
-      this.ai.update(this);
+      await this.ai.update(this);
     }
   }
 

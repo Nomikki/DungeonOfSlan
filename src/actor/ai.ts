@@ -2,7 +2,7 @@
 import { ensure, float2int } from "@/utils";
 import vec2 from "@/utils/vec2";
 import Actor from ".";
-import { game } from "..";
+import { Color, game } from "..";
 
 export default class Ai {
 
@@ -14,7 +14,7 @@ export default class Ai {
 
 export class PlayerAI extends Ai {
 
-  update(owner: Actor) {
+  async update(owner: Actor) {
     //if owner destructible and not dead...
     if (owner.destructible && owner.destructible.isDead())
       return;
@@ -36,24 +36,79 @@ export class PlayerAI extends Ai {
       dy = 1;
     }
 
-    //this.handleActionKey(owner, game.lastKey);
+    await this.handleActionKey(owner, game.lastKey);
 
     if (dx != 0 || dy != 0) {
-      if (this.moveOrAttack(owner, new vec2(owner.pos.x + dx, owner.pos.y + dy))) {
+      if (await this.moveOrAttack(owner, new vec2(owner.pos.x + dx, owner.pos.y + dy))) {
         console.log("compute fov");
       }
     }
 
   }
-  /*
-  handleActionKey(owner: Actor, key: string)
-  {
-    owner.pos.x += 0;
-    //console.log(key);
-  }
-  */
 
-  moveOrAttack(owner: Actor, target: vec2): boolean {
+  async chooseFromInventory(owner: Actor) {
+    //let key = 0;
+    game.clear(new Color(0, 0, 0));
+    let shortcut = 'a';
+
+    for (let i = 0; i < ensure(owner.container)?.inventory.length; i++) {
+      const actor = owner.container?.inventory[i];
+      console.log(actor?.name);
+      game.drawText(`${shortcut}) ${actor?.name}`, 2, 2 + i, "#FFFFFF");
+
+      shortcut = String.fromCharCode(shortcut.charCodeAt(0) + 1);
+    }
+
+    const ch = await game.getch();
+    console.log(`ch: ${ch}`);
+    const actorIndex = ch.charCodeAt(0) - 97; // 97 = a
+    if (actorIndex >= 0 && actorIndex < ensure(owner.container).inventory.length) {
+      return ensure(owner.container).inventory[actorIndex];
+    }
+
+    return undefined;
+
+  }
+
+
+
+  async handleActionKey(owner: Actor, key: string) {
+
+    const useItem = async () => {
+      const actor = await this.chooseFromInventory(owner);
+      if (actor) {
+        console.log(`You use a ${actor.name}`);
+        ensure(actor.pickable).use(actor, owner);
+      }
+    };
+
+    if (key === "g") {
+      let found = false;
+      for (let i = 0; i < game.actors.length; i++) {
+        const actor = game.actors[i];
+
+        if (actor.pickable && actor.pos.x === owner.pos.x && actor.pos.y === owner.pos.y) {
+          if (actor.pickable.pick(actor, owner)) {
+            console.log(`You pick the ${actor.name}`);
+            found = true;
+            break;
+          } else if (!found) {
+            console.log(`Your inventory is full`);
+          }
+        }
+      }
+      if (!found) {
+        console.log("Nothing here that you can pick up.");
+      }
+    }
+
+    if (key === "i") {
+      await useItem();
+    }
+  }
+
+
+  async moveOrAttack(owner: Actor, target: vec2) {
     const p = target;
     if (game.isWall(p))
       return false;

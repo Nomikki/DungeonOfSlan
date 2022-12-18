@@ -4,6 +4,7 @@ import { MonsterAi, PlayerAI } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
 import { Container } from "./actor/container";
 import { MonsterDestructible, PlayerDestructible } from "./actor/destructible";
+import { Healer, LightningBold } from "./actor/pickable";
 import Level from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
 import vec2 from "./utils/vec2";
@@ -173,7 +174,7 @@ export class Game {
     for (let i = 0; i < this.actors.length; i++) {
       const actor = this.actors[i];
       const distance = actor.getDistance(pos);
-      if (distance < bestDistance && (distance <= range || range === 0)) {
+      if (distance < bestDistance && (distance <= range || range === 0) && actor !== this.player) {
         bestDistance = distance;
         closest = actor;
       }
@@ -209,8 +210,9 @@ export class Game {
   }
 
   async gameLoop() {
+    this.render();
+
     while (true) {
-      this.render();
 
       //const oldKey = this.lastKey;
       this.lastKey = await this.getch();
@@ -222,13 +224,15 @@ export class Game {
       }
       */
 
-      ensure(this.player).update();
+      await ensure(this.player).update();
 
       for (let i = 0; i < this.actors.length; i++) {
         if (this.actors[i] != this.player) {
-          this.actors[i].update();
+          await this.actors[i].update();
         }
       }
+      this.render();
+
     }
   }
 
@@ -237,6 +241,31 @@ export class Game {
     actor.pos.x = x;
     actor.pos.y = y;
     this.actors.push(actor);
+  }
+
+  addItem(name: string, x: number, y: number) {
+    let color = "#808080";
+    let character = "?";
+    let pickableType = undefined;
+
+    if (name === "Healing potion") {
+      color = "#FF00FF";
+      character = '!';
+      pickableType = new Healer(10);
+    }
+    else if (name === "Scroll of lightning bolt") {
+      color = "#FFAA00";
+      character = '#';
+      pickableType = new LightningBold(10, 15);
+    }
+
+    this.addUnit(name, x, y, character, color);
+    const item = this.actors[this.actors.length - 1];
+
+    if (pickableType)
+      item.pickable = pickableType;
+
+    this.sendToBack(item);
   }
 
   addAI(name: string, x: number, y: number) {
@@ -313,6 +342,8 @@ export class Game {
 
     this.addAI("Hero", 4, 12);
     this.addAI("Orc", 14, 12);
+    this.addItem("Healing potion", 6, 6);
+    this.addItem("Scroll of lightning bolt", 10, 6);
 
 
   }
@@ -326,7 +357,7 @@ export class Game {
     console.log("Game is running");
     this.init();
     this.load();
-    this.gameLoop();
+    await this.gameLoop();
   }
 }
 
