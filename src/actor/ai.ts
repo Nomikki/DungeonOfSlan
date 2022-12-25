@@ -2,11 +2,11 @@
 import { ensure, float2int } from "@/utils";
 import vec2 from "@/utils/vec2";
 import Actor from ".";
-import { Color, game } from "..";
+import { Color, game, GameStatus } from "..";
 
 export default class Ai {
 
-  update(owner: Actor) {
+  async update(owner: Actor) {
     console.log("raw ai.", owner);
   }
 
@@ -38,6 +38,7 @@ export class PlayerAI extends Ai {
     await this.handleActionKey(owner, game.lastKey);
 
     if (dx != 0 || dy != 0) {
+      game.gamestatus = GameStatus.NEW_TURN;
       if (await this.moveOrAttack(owner, new vec2(owner.pos.x + dx, owner.pos.y + dy))) {
         if (owner.fov) {
           await owner.computeFov();
@@ -77,6 +78,7 @@ export class PlayerAI extends Ai {
         game.log?.addToLog(`Käytit esineen ${actor.name}`, "#999");
         ensure(actor.pickable).use(actor, owner);
       }
+      game.gamestatus = GameStatus.NEW_TURN;
     };
 
     const pickupItem = async () => {
@@ -97,6 +99,7 @@ export class PlayerAI extends Ai {
       if (!found) {
         game.log?.addToLog(`Tässä ei ole mitään poimittavaa.`, "#999");
       }
+      game.gamestatus = GameStatus.NEW_TURN;
     };
 
     const handleNextLevel = async () => {
@@ -105,6 +108,7 @@ export class PlayerAI extends Ai {
       } else {
         game.log?.addToLog(`Tässä ei ole portaita.`, "#999");
       }
+      game.gamestatus = GameStatus.NEW_TURN;
     };
 
     if (key === "g") {
@@ -126,7 +130,7 @@ export class PlayerAI extends Ai {
     for (let i = 0; i < game.actors.length; i++) {
       const actor = game.actors[i];
       if (actor.attacker && actor.destructible && !actor.destructible.isDead() && actor.pos.x === target.x && actor.pos.y === target.y) {
-        ensure(owner.attacker).attack(owner, actor);
+        await ensure(owner.attacker).attack(owner, actor);
         return false;
       }
     }
@@ -183,7 +187,7 @@ export class MonsterAi extends Ai {
         owner.pos.y += stepdy;
       }
     } else {
-      owner.attacker?.attack(owner, ensure(game.player));
+      await owner.attacker?.attack(owner, ensure(game.player));
     }
 
   }

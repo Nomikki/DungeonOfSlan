@@ -9,7 +9,7 @@ export class Attacker {
     this.power = power;
   }
 
-  attack(owner: Actor, target: Actor) {
+  async attack(owner: Actor, target: Actor) {
     if (target.destructible && !target.destructible.isDead()) {
       const currentPower = random.getInt(0, this.power);
 

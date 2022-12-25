@@ -1,5 +1,6 @@
+import { float2int } from "@/utils";
 import Actor from ".";
-import { game } from "..";
+import { game, GameStatus } from "..";
 
 export class Destructible {
   maxHP: number;
@@ -15,7 +16,7 @@ export class Destructible {
   }
 
   isDead(): boolean {
-    return this.HP < 0;
+    return float2int(this.HP) <= 0;
   }
 
   TakeDamage(owner: Actor, damage: number): number {
@@ -69,6 +70,7 @@ export class PlayerDestructible extends Destructible {
 
   Die(owner: Actor) {
     game.log?.addToLog(`Sinä kuolit`, "#900");
+    game.gamestatus = GameStatus.DEFEAT;
     super.Die(owner);
   }
 }

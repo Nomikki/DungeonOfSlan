@@ -12,6 +12,14 @@ import { Camera } from "./utils/camera";
 import { Log } from "./utils/log";
 import vec2 from "./utils/vec2";
 
+export enum GameStatus {
+  STARTUP,
+  IDLE,
+  NEW_TURN,
+  VICTORY,
+  DEFEAT,
+}
+
 export class Color {
   r = 0;
   g = 0;
@@ -40,6 +48,7 @@ export class Game {
   player?: Actor;
   log?: Log;
   camera?: Camera;
+  gamestatus: number;
 
   constructor() {
     this.canvas = ensure(document.querySelector("#screen"));
@@ -51,16 +60,13 @@ export class Game {
     this.actors = [];
     this.log = new Log(10);
     this.camera = new Camera();
-
-
+    this.gamestatus = GameStatus.STARTUP;
   }
 
   clear(color: Color): void {
     //Game
     this.ctx.fillStyle = rgbToHex(color.r, color.g, color.b);
     this.ctx.fillRect(0, 0, this.width, this.height);
-
-
   }
 
   putPixel(x: number, y: number, color: Color): void {
@@ -253,26 +259,30 @@ export class Game {
     this.render();
 
     while (true) {
-
       //const oldKey = this.lastKey;
       this.lastKey = await this.getch();
 
-      /*
-      if (oldKey != this.lastKey)
+      //if (oldKey != this.lastKey)
       {
+
+        if (this.gamestatus !== GameStatus.DEFEAT)
+          this.gamestatus = GameStatus.IDLE;
+
+
+        await ensure(this.player).update();
+        this.camera?.update(ensure(this.player));
         
-      }
-      */
 
-      await ensure(this.player).update();
-      this.camera?.update(ensure(this.player));
+        if (this.gamestatus === GameStatus.NEW_TURN) {
 
-      for (let i = 0; i < this.actors.length; i++) {
-        if (this.actors[i] != this.player) {
-          await this.actors[i].update();
+          for (let i = 0; i < this.actors.length; i++) {
+            if (this.actors[i] != this.player) {
+              await this.actors[i].update();
+            }
+          }
         }
+        this.render();
       }
-      this.render();
 
     }
   }
@@ -411,6 +421,8 @@ export class Game {
     */
 
 
+
+
     this.addAI("Hero", 4, 12);
     this.fillWithNPCs();
 
@@ -418,39 +430,52 @@ export class Game {
     this.addItem("Scroll of lightning bolt", 10, 6);
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
 
-    this.log?.addToLog(`${this.level?.dungeonName} on täynnä vaaroja.`, "#FF2222");
-    this.log?.addToLog(`Pidä varasi!`, "#FF2222");
   }
 
   fillWithNPCs() {
+    let amountOfMonsters = 0;
+    let amountOfRooms = 0;
     for (let i = 0; i < ensure(this.level?.root).rooms.length; i++) {
       const room = ensure(this.level?.root?.rooms[i]);
+      amountOfRooms++;
       if (float2int(room.GetCenterX()) === this.level?.startPosition.x && float2int(room.GetCenterY()) === this.level.startPosition.y) {
         continue;
       }
-      const wh = Math.min(5,  random.getInt(0, float2int(Math.sqrt(Math.max(0, (room.w-5) * (room.h-5))))));
+      const wh = Math.min(5, random.getInt(0, float2int(Math.sqrt(Math.max(0, (room.w - 5) * (room.h - 5))))));
 
-      console.log(wh);
+      //console.log(wh);
       for (let a = 0; a < wh; a++) {
 
         let dx = 0;
         let dy = 0;
 
-        while(1) {
+        while (1) {
           dx = random.getInt(room?.x + 2, (room.x + room.w - 2));
           dy = random.getInt(room?.y + 2, (room.y + room.h - 3));
-          if (this.canWalk(new vec2(dx, dy)))  
-          {
+          if (this.canWalk(new vec2(dx, dy))) {
             break;
           }
 
         }
-
-        this.addAI("Orc", dx, dy);
+        if (random.getInt(0, 100) > 90) {
+          this.addAI("Orc", dx, dy);
+          amountOfMonsters++;
+        }
       }
-
-
     }
+
+    const monsterRatio = amountOfMonsters / amountOfRooms;
+    if (monsterRatio >= 0.7)
+      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa todella vaaralliselta.`, "#FFFFFF");
+    else if (monsterRatio >= 0.5)
+      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa melkoisen pahaenteiseltä.`, "#FFFFFF");
+    else if (monsterRatio >= 0.25)
+      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa melkoisen asumattomalta.`, "#FFFFFF");
+    else
+      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa hiljaiselta.`, "#FFFFFF");
+
+
+    console.log(amountOfMonsters / amountOfRooms, amountOfMonsters, amountOfRooms);
   }
 
   load() {
