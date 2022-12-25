@@ -199,7 +199,6 @@ export default class Level {
   }
 
   createPath(sx: number, sy: number, ex: number, ey: number, maxLen: number): number {
-    //this.nodes.splice(0, this.nodes.length);
     this.nodes = [];
 
     for (let i = 0; i < this.width * this.height; i++) {
@@ -210,9 +209,9 @@ export default class Level {
 
     let found = false;
 
-    let matka = 0; // pitää kirjaa matkasta joka on jo kuljettu
-    for (let i = 0; i < maxLen; i++) { // montako 'askelta'
-      for (let x = sx - (i + 1); x < sx + i + 1; x++) { // joka stepillä kasvatetaan haravointialuetta yhdellä (itseasiassa kahdella)
+    let distance = 0; // counting travelling distance
+    for (let i = 0; i < maxLen; i++) {
+      for (let x = sx - (i + 1); x < sx + i + 1; x++) { // in every step, increase harvesting area by 2
         for (let y = sy - (i + 1); y < sy + i + 1; y++) {
           if (x < 0 || y < 0 || x >= this.width - 1 || y >= this.height - 1)
             continue; // rajojen ulkopuolella
@@ -226,24 +225,20 @@ export default class Level {
             if (this.pathMap[this.convertXYtoID(x, y + 1)] === 0)
               this.pathMap[this.convertXYtoID(x, y + 1)] = i + 1;
             if (x === ex && y === ey)
-              found = true; // löydettiin loppu
-            matka++;
+              found = true;
+            distance++;
           }
         }
       }
     }
-    // lopetusta ei löydetty
-    if (found == false) {
 
+    if (found == false)
       return 1;
-    }
 
     let x = ex;
     let y = ey;
 
-    for (let i = 0; i < matka; i++) {
-
-
+    for (let i = 0; i < distance; i++) {
       const id = this.convertXYtoID(x, y);
 
       const oldX = x;
@@ -260,7 +255,6 @@ export default class Level {
 
       if (this.pathMap[this.convertXYtoID(x, y + 1)] === this.pathMap[id] - 1)
         y++;
-
 
       if (oldX !== x || oldY !== y) {
         const nd = new PathNode();
@@ -304,8 +298,7 @@ export default class Level {
       this.nodes = [];
       this.createPath(corridor.x, corridor.y, corridor.w, corridor.h, 128);
 
-      if (this.nodes.length == 0) {
-        //console.log("fail");
+      if (this.nodes.length === 0) {
         failedCorridos.push(corridor);
       }
 
@@ -313,8 +306,6 @@ export default class Level {
         this.nodeTemp.push(this.nodes[j]);
       }
     }
-
-
 
     for (let i = 0; i < this.nodeTemp.length; i++) {
       const node = this.nodeTemp[i];
@@ -360,8 +351,6 @@ export default class Level {
         break;
       }
     }
-
-
   }
 
 
