@@ -55,6 +55,8 @@ export default class Level {
   stairs: vec2;
 
   dungeonName: string;
+  failedCorridos: Rectangle[] = [];
+
 
   constructor(width: number, height: number) {
 
@@ -129,13 +131,12 @@ export default class Level {
   }
 
   fillUnusedTiles() {
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
-        const id = x + y * this.width;
-        if (this.tiles[id].type === TileTypes.unused)
-          this.setWall(x, y);
+    this.tiles.map(tile => {
+      if (tile.type === TileTypes.unused) {
+        tile.collide = true;
+        tile.type = TileTypes.wall;
       }
-    }
+    });
   }
 
 
@@ -145,17 +146,17 @@ export default class Level {
       this.setFloor(x, y + (h / 2));
       this.setFloor(x + 1, y + (h / 2));
     }
-    if (wall == 1) {
+    else if (wall == 1) {
       this.setFloor(x + w - 1, y + (h / 2));
       this.setFloor(x + w, y + (h / 2));
       this.setFloor(x + w + 1, y + (h / 2));
     }
-    if (wall == 2) {
+    else if (wall == 2) {
       this.setFloor(x + (w / 2), y - 1);
       this.setFloor(x + (w / 2), y);
       this.setFloor(x + (w / 2), y + 1);
     }
-    if (wall == 3) {
+    else if (wall == 3) {
       this.setFloor(x + (w / 2), y + h - 1);
       this.setFloor(x + (w / 2), y + h);
       this.setFloor(x + (w / 2), y + h + 1);
@@ -186,10 +187,16 @@ export default class Level {
   }
 
 
-  async setPathStart(x: number, y: number) {
+  async setupPathStart(x: number, y: number) {
+    this.nodes = [];
+
+    for (let i = 0; i < this.width * this.height; i++) {
+      this.pathMap[i] = this.tiles[i].collide ? -1 : 0;
+    }
+
     const id = this.convertXYtoID(x, y);
 
-    if (id >= 0 && id < (this.width * this.height)) {
+    if (id >= 0 && id < this.width * this.height) {
       this.pathMap[id] = 1;
     }
   }
@@ -198,16 +205,23 @@ export default class Level {
     return x + y * this.width;
   }
 
-  createPath(sx: number, sy: number, ex: number, ey: number, maxLen: number): number {
-    this.nodes = [];
+  getPathmapId(x: number, y: number) {
+    return this.pathMap[this.convertXYtoID(x, y)];
+  }
 
-    for (let i = 0; i < this.width * this.height; i++) {
-      this.pathMap[i] = this.tiles[i].collide ? -1 : 0;
-    }
 
-    this.setPathStart(sx, sy);
 
-    let found = false;
+  harvestMap(sx: number, sy: number, ex: number, ey: number, maxLen: number) {
+
+    const setPathmapId = (x: number, y: number, id: number) => {
+      this.pathMap[this.convertXYtoID(x, y)] = id;
+    };
+
+    const trySetPathMap = (x: number, y: number, id: number) => {
+      if (this.getPathmapId(x, y) === 0)
+        setPathmapId(x, y, id);
+    };
+
 
     let distance = 0; // counting travelling distance
     for (let i = 0; i < maxLen; i++) {
@@ -215,146 +229,160 @@ export default class Level {
         for (let y = sy - (i + 1); y < sy + i + 1; y++) {
           if (x < 0 || y < 0 || x >= this.width - 1 || y >= this.height - 1)
             continue; // rajojen ulkopuolella
-          if (this.pathMap[this.convertXYtoID(x, y)] === i) { // dismapista löytyi arvo jota haetaan, laitetaan sen ympärille vapaisiin kohtiin sueraavat arvot
-            if (this.pathMap[this.convertXYtoID(x - 1, y)] === 0)
-              this.pathMap[this.convertXYtoID(x - 1, y)] = i + 1;
-            if (this.pathMap[this.convertXYtoID(x + 1, y)] === 0)
-              this.pathMap[this.convertXYtoID(x + 1, y)] = i + 1;
-            if (this.pathMap[this.convertXYtoID(x, y - 1)] === 0)
-              this.pathMap[this.convertXYtoID(x, y - 1)] = i + 1;
-            if (this.pathMap[this.convertXYtoID(x, y + 1)] === 0)
-              this.pathMap[this.convertXYtoID(x, y + 1)] = i + 1;
+          if (this.getPathmapId(x, y) === i) { // dismapista löytyi arvo jota haetaan, laitetaan sen ympärille vapaisiin kohtiin sueraavat arvot
+            trySetPathMap(x - 1, y, i + 1);
+            trySetPathMap(x + 1, y, i + 1);
+            trySetPathMap(x, y - 1, i + 1);
+            trySetPathMap(x, y + 1, i + 1);
+
             if (x === ex && y === ey)
-              found = true;
+              return 0;
             distance++;
           }
         }
       }
     }
+    return distance;
+  }
 
-    if (found == false)
-      return 1;
+  finalizePath(ex: number, ey: number, distance: number) {
+
 
     let x = ex;
     let y = ey;
 
     for (let i = 0; i < distance; i++) {
-      const id = this.convertXYtoID(x, y);
+      const pathmapValue = this.pathMap[this.convertXYtoID(x, y)] - 1;
 
       const oldX = x;
       const oldY = y;
 
-      if (this.pathMap[this.convertXYtoID(x - 1, y)] === this.pathMap[id] - 1)
+      if (this.getPathmapId(x - 1, y) === pathmapValue)
         x--;
-
-      if (this.pathMap[this.convertXYtoID(x + 1, y)] === this.pathMap[id] - 1)
+      else if (this.getPathmapId(x + 1, y) === pathmapValue)
         x++;
-
-      if (this.pathMap[this.convertXYtoID(x, y - 1)] === this.pathMap[id] - 1)
+      else if (this.getPathmapId(x, y - 1) === pathmapValue)
         y--;
-
-      if (this.pathMap[this.convertXYtoID(x, y + 1)] === this.pathMap[id] - 1)
+      else if (this.getPathmapId(x, y + 1) === pathmapValue)
         y++;
 
       if (oldX !== x || oldY !== y) {
         const nd = new PathNode();
         nd.x = x;
         nd.y = y;
-        nd.distance = this.pathMap[id];
+        nd.distance = pathmapValue + 1;
         this.nodes.push(nd);
       }
     }
-    return 0;
   }
 
+  createPath(sx: number, sy: number, ex: number, ey: number, maxLen: number) {
+    this.setupPathStart(sx, sy);
 
-  async generateMap(seed: number, lvl: number) {
+    const distance = this.harvestMap(sx, sy, ex, ey, maxLen);
+    if (distance === 0)
+      return;
+
+    this.finalizePath(ex, ey, distance);
+  }
+
+  setupMap(seed: number, lvl: number) {
     this.depth = lvl;
     this.levelSeed = seed;
     this.nodeTemp = [];
     random.setSeed(this.levelSeed + lvl * 25);
-
     this.generateName();
+
     this.tiles = new Array(this.width * this.height).fill(false);
     for (let i = 0; i < this.width * this.height; i++)
       this.tiles[i] = new Tile();
+
     const splitAmount = random.getInt(4, 8);
-    console.log("splitted to " + splitAmount);
     this.root = new bspGenerator(3, 3, this.width - 4, this.height - 4, splitAmount);
+  }
 
-
-    for (let i = 0; i < this.root.rooms.length; i++) {
-      const tempRoom = this.root.tempRooms[i];
+  makeRooms() {
+    for (let i = 0; i < ensure(this.root).rooms.length; i++) {
+      const tempRoom = ensure(this.root).tempRooms[i];
 
       const room = new Rectangle(tempRoom.x, tempRoom.y, tempRoom.w, tempRoom.h);
 
       this.makeWalls(room.x, room.y, room.x + room.w, room.y + room.h); 0
       this.makeDoorHole(room.x, room.y, room.w, room.h, random.getInt(0, 4));
     }
+  }
 
-    const failedCorridos: Rectangle[] = [];
-    for (let i = 0; i < this.root.corridos.length; i++) {
-      const corridor = this.root.corridos[i]
+  preparingCorridors() {
+    this.failedCorridos = [];
+
+    for (let i = 0; i < ensure(this.root).corridos.length; i++) {
+      const corridor = ensure(this.root).corridos[i]
       this.nodes = [];
       this.createPath(corridor.x, corridor.y, corridor.w, corridor.h, 128);
 
       if (this.nodes.length === 0) {
-        failedCorridos.push(corridor);
+        this.failedCorridos.push(corridor);
       }
 
       for (let j = 0; j < this.nodes.length; j++) {
         this.nodeTemp.push(this.nodes[j]);
       }
     }
+  }
 
+  makeCorridors() {
     for (let i = 0; i < this.nodeTemp.length; i++) {
       const node = this.nodeTemp[i];
       this.setFloor(node.x, node.y);
     }
 
-    for (let i = 0; i < failedCorridos.length; i++) {
-      const corridor = failedCorridos[i];
+    for (let i = 0; i < this.failedCorridos.length; i++) {
+      const corridor = this.failedCorridos[i];
       this.createNaivePath(corridor.x, corridor.y, corridor.w, corridor.h);
     }
 
-    this.fillUnusedTiles();
-    /*
-    {
-      this.smoothMap();
+  }
 
-      for (let i = 0; i < this.nodeTemp.length; i++) {
-        const node = this.nodeTemp[i];
-        this.setFloor(node.x, node.y);
-      }
-
-      for (let i = 0; i < failedCorridos.length; i++) {
-        const corridor = failedCorridos[i];
-        this.createNaivePath(corridor.x, corridor.y, corridor.w, corridor.h);
+  findFreeRoom(ignoreRoom: number) {
+    while (1) {
+      const currentRoom = random.getInt(0, ensure(this.root).rooms.length);
+      if (currentRoom != ignoreRoom) {
+        return currentRoom;
       }
     }
-    */
+    return 0;
+  }
+
+  setupStarsAndStairs() {
+    const startRoom = this.findFreeRoom(-1);
+    const room = ensure(this.root).rooms[startRoom];
+    this.startPosition = room.GetCenter();
+
+    const endRoom = this.findFreeRoom(startRoom);
+    const stairsRoom = ensure(this.root).rooms[endRoom];
+    this.stairs = stairsRoom.GetCenter();
+  }
+
+  async generateMap(seed: number, lvl: number) {
+    this.setupMap(seed, lvl);
+
+    this.makeRooms();
+    this.preparingCorridors();
+    this.makeCorridors();
+
+    this.fillUnusedTiles();
+
+    if (random.getInt(0, 100) > 80) {
+      this.smoothMap();
+      this.makeCorridors();
+    }
 
     //set start and end
-    const startRoom = random.getInt(0, this.root.rooms.length);
-
-    const room = this.root.rooms[startRoom];
-    this.startPosition.x = float2int(room.GetCenterX());
-    this.startPosition.y = float2int(room.GetCenterY());
-
-    while (1) {
-      const endRoom = random.getInt(0, this.root.rooms.length);
-      if (endRoom != startRoom) {
-        const stairsRoom = this.root.rooms[endRoom];
-        this.stairs.x = float2int(stairsRoom.GetCenterX());
-        this.stairs.y = float2int(stairsRoom.GetCenterY());
-
-        break;
-      }
-    }
+    this.setupStarsAndStairs();
   }
 
 
-  howManyWalls2(x: number, y: number): number {
+  howManyWalls(x: number, y: number): number {
     if (x > 0 && y > 0 && x < this.width - 1 && y < this.height - 1) {
       let count = 0;
       for (let lx = x - 1; lx <= x + 1; lx++)
@@ -368,7 +396,7 @@ export default class Level {
   }
 
   placeWallLogic(x: number, y: number): number {
-    const numWalls = this.howManyWalls2(x, y);
+    const numWalls = this.howManyWalls(x, y);
     if (this.isWall(x, y)) {
       if (numWalls >= 4) return 1;
       if (numWalls < 2) return 0;
