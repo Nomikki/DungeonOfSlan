@@ -6,7 +6,7 @@ import { Container } from "./actor/container";
 import { MonsterDestructible, PlayerDestructible } from "./actor/destructible";
 import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
-import Level from "./level";
+import Level, { random } from "./level";
 import { ensure, float2int, rgbToHex } from "./utils";
 import { Camera } from "./utils/camera";
 import { Log } from "./utils/log";
@@ -327,7 +327,7 @@ export class Game {
       color = "#FFF";
       character = "@";
       hp = 15;
-      defense = 5;
+      defense = 2;
       attackPower = 5;
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
@@ -346,7 +346,7 @@ export class Game {
       color = "#00FF00";
       hp = 7;
       defense = 2;
-      attackPower = 2;
+      attackPower = 5;
     }
 
     this.addUnit(name, x, y, character, color);
@@ -377,6 +377,7 @@ export class Game {
     await this.player?.fov?.clearLos();
 
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
+    this.fillWithNPCs();
 
     await this.player?.computeFov();
 
@@ -411,16 +412,45 @@ export class Game {
 
 
     this.addAI("Hero", 4, 12);
-    this.addAI("Orc", 14, 12);
+    this.fillWithNPCs();
+
     this.addItem("Healing potion", 6, 6);
     this.addItem("Scroll of lightning bolt", 10, 6);
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
 
     this.log?.addToLog(`${this.level?.dungeonName} on täynnä vaaroja.`, "#FF2222");
     this.log?.addToLog(`Pidä varasi!`, "#FF2222");
+  }
+
+  fillWithNPCs() {
+    for (let i = 0; i < ensure(this.level?.root).rooms.length; i++) {
+      const room = ensure(this.level?.root?.rooms[i]);
+      if (float2int(room.GetCenterX()) === this.level?.startPosition.x && float2int(room.GetCenterY()) === this.level.startPosition.y) {
+        continue;
+      }
+      const wh = Math.min(5,  random.getInt(0, float2int(Math.sqrt(Math.max(0, (room.w-5) * (room.h-5))))));
+
+      console.log(wh);
+      for (let a = 0; a < wh; a++) {
+
+        let dx = 0;
+        let dy = 0;
+
+        while(1) {
+          dx = random.getInt(room?.x + 2, (room.x + room.w - 2));
+          dy = random.getInt(room?.y + 2, (room.y + room.h - 3));
+          if (this.canWalk(new vec2(dx, dy)))  
+          {
+            break;
+          }
+
+        }
+
+        this.addAI("Orc", dx, dy);
+      }
 
 
-
+    }
   }
 
   load() {

@@ -44,6 +44,7 @@ export default class Level {
   depth = 0;
   levelSeed = 0;
 
+  root: bspGenerator | undefined;
   tiles: Tile[];
   noisemap: number[];
   pathMap: number[];
@@ -283,13 +284,13 @@ export default class Level {
     this.tiles = new Array(this.width * this.height).fill(false);
     for (let i = 0; i < this.width * this.height; i++)
       this.tiles[i] = new Tile();
-    const splitAmount = random.getInt(3, 8);
+    const splitAmount = random.getInt(4, 8);
     console.log("splitted to " + splitAmount);
-    const root = new bspGenerator(3, 3, this.width - 4, this.height - 4, splitAmount);
+    this.root = new bspGenerator(3, 3, this.width - 4, this.height - 4, splitAmount);
 
 
-    for (let i = 0; i < root.rooms.length; i++) {
-      const tempRoom = root.tempRooms[i];
+    for (let i = 0; i < this.root.rooms.length; i++) {
+      const tempRoom = this.root.tempRooms[i];
 
       const room = new Rectangle(tempRoom.x, tempRoom.y, tempRoom.w, tempRoom.h);
 
@@ -298,8 +299,8 @@ export default class Level {
     }
 
     const failedCorridos: Rectangle[] = [];
-    for (let i = 0; i < root.corridos.length; i++) {
-      const corridor = root.corridos[i]
+    for (let i = 0; i < this.root.corridos.length; i++) {
+      const corridor = this.root.corridos[i]
       this.nodes = [];
       this.createPath(corridor.x, corridor.y, corridor.w, corridor.h, 128);
 
@@ -343,16 +344,16 @@ export default class Level {
     */
 
     //set start and end
-    const startRoom = random.getInt(0, root.rooms.length);
+    const startRoom = random.getInt(0, this.root.rooms.length);
 
-    const room = root.rooms[startRoom];
+    const room = this.root.rooms[startRoom];
     this.startPosition.x = float2int(room.GetCenterX());
     this.startPosition.y = float2int(room.GetCenterY());
 
     while (1) {
-      const endRoom = random.getInt(0, root.rooms.length);
+      const endRoom = random.getInt(0, this.root.rooms.length);
       if (endRoom != startRoom) {
-        const stairsRoom = root.rooms[endRoom];
+        const stairsRoom = this.root.rooms[endRoom];
         this.stairs.x = float2int(stairsRoom.GetCenterX());
         this.stairs.y = float2int(stairsRoom.GetCenterY());
 
@@ -440,7 +441,7 @@ export default class Level {
     }
     this.dungeonName += listOfFirstParts[random.getInt(0, listOfFirstParts.length)] + " " + listOfSecondParts[random.getInt(0, listOfFirstParts.length)];
     this.dungeonName = capitalize(this.dungeonName.toLowerCase());
-    
+
   }
 
   render() {
