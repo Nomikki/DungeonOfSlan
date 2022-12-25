@@ -271,7 +271,7 @@ export class Game {
 
         await ensure(this.player).update();
         this.camera?.update(ensure(this.player));
-        
+
 
         if (this.gamestatus === GameStatus.NEW_TURN) {
 
@@ -321,7 +321,7 @@ export class Game {
 
     if (pickableType)
       item.pickable = pickableType;
-
+    console.log(`Item ${item.name} added`);
     this.sendToBack(item);
   }
 
@@ -332,17 +332,19 @@ export class Game {
     let defense = 2;
     const corpseName = "carcass of " + name;
     let attackPower = 1;
+    let accuracy = 1;
 
     if (name === "Hero") {
       color = "#FFF";
       character = "@";
       hp = 15;
-      defense = 2;
+      defense = 10;
       attackPower = 5;
+      accuracy = 10;
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
       this.player.destructible = new PlayerDestructible(hp, defense, corpseName);
-      this.player.attacker = new Attacker(attackPower);
+      this.player.attacker = new Attacker(attackPower, accuracy);
       ensure(this.player).ai = new PlayerAI();
       this.player.container = new Container(26);
       this.player.fov = new FieldOfView(ensure(this.level).width, ensure(this.level).height);
@@ -357,12 +359,30 @@ export class Game {
       hp = 7;
       defense = 2;
       attackPower = 5;
+      accuracy = 9;
+    }
+
+    else if (name === "Rotta") {
+      character = 'r';
+      color = "#808080";
+      hp = 3;
+      defense = 1;
+      attackPower = 2;
+      accuracy = 3;
+    }
+    else if (name === "Jättirotta") {
+      character = 'R';
+      color = "#808080";
+      hp = 5;
+      defense = 1;
+      attackPower = 4;
+      accuracy = 5;
     }
 
     this.addUnit(name, x, y, character, color);
     const monster = this.actors[this.actors.length - 1];
     monster.ai = new MonsterAi();
-    monster.attacker = new Attacker(attackPower);
+    monster.attacker = new Attacker(attackPower, accuracy);
     monster.destructible = new MonsterDestructible(hp, defense, corpseName);
 
 
@@ -388,6 +408,7 @@ export class Game {
 
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
     this.fillWithNPCs();
+    this.fillWithItems();
 
     await this.player?.computeFov();
 
@@ -425,10 +446,48 @@ export class Game {
 
     this.addAI("Hero", 4, 12);
     this.fillWithNPCs();
+    this.fillWithItems();
 
-    this.addItem("Healing potion", 6, 6);
-    this.addItem("Scroll of lightning bolt", 10, 6);
+
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
+
+  }
+
+  fillWithItems() {
+
+
+    for (let i = 0; i < ensure(this.level?.root).rooms.length; i++) {
+      const room = ensure(this.level?.root?.rooms[i]);
+
+      if (float2int(room.GetCenterX()) === this.level?.startPosition.x && float2int(room.GetCenterY()) === this.level.startPosition.y) {
+        continue;
+      }
+      const wh = Math.min(5, random.getInt(0, float2int(Math.sqrt(Math.max(0, (room.w - 5) * (room.h - 5))))));
+
+      //console.log(wh);
+      for (let a = 0; a < wh; a++) {
+
+        let dx = 0;
+        let dy = 0;
+
+        while (1) {
+          dx = random.getInt(room?.x + 2, (room.x + room.w - 2));
+          dy = random.getInt(room?.y + 2, (room.y + room.h - 3));
+          if (this.canWalk(new vec2(dx, dy))) {
+            break;
+          }
+
+        }
+        if (random.getInt(0, 100) > 50) {
+          const r = random.getInt(0, 5);
+          if (r === 0)
+            this.addItem("Healing potion", dx, dy);
+          if (r === 1)
+            this.addItem("Scroll of lightning bolt", dx, dy);
+
+        }
+      }
+    }
 
   }
 
@@ -458,7 +517,8 @@ export class Game {
 
         }
         if (random.getInt(0, 100) > 90) {
-          this.addAI("Orc", dx, dy);
+          this.addAI("Rotta", dx, dy);
+          //this.addAI("Orc", dx, dy);
           amountOfMonsters++;
         }
       }

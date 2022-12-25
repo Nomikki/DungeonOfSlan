@@ -116,9 +116,14 @@ export class PlayerAI extends Ai {
     }
     else if (key === "i") {
       await useItem();
-    } else if (key == ">") {
+    } else if (key === ">") {
       await handleNextLevel();
     }
+    /*
+    else if (key === "R") {
+      await owner.fov?.revealAll();
+    }
+    */
   }
 
 

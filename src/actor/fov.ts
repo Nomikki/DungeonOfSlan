@@ -39,6 +39,13 @@ export class FieldOfView {
     }
   }
 
+  async revealAll() {
+    for (let i = 0; i < this.width * this.height; i++) {
+      if (this.tiles[i] == 0)
+        this.tiles[i] = 1;
+    }
+  }
+
 
   async calculate(owner: Actor, radius: number) {
 
