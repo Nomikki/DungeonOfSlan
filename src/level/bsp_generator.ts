@@ -15,6 +15,9 @@ class bspGenerator {
   rooms: Rectangle[];
   tree: bspNode;
 
+  ROOM_MIN_SIZE = 2;
+  ROOM_MAX_SIZE = 16;
+
   constructor(x: number, y: number, w: number, h: number, maxLevel = 5) {
     this.maxLevel = maxLevel;
 
@@ -92,12 +95,13 @@ class bspGenerator {
   CreateRooms() {
     //for (let i = 0; i < this.rooms.length; i++) {
     for (const room of this.rooms) {
-      const w = random.getInt(room.w * 0.8, room.w * 0.9);
-      const h = random.getInt(room.h * 0.8, room.h * 0.9);
+      const w = Math.min(this.ROOM_MAX_SIZE, Math.max(this.ROOM_MIN_SIZE, random.getInt(room.w * 0.8, room.w * 0.9)));
+      const h = Math.min(this.ROOM_MAX_SIZE, Math.max(this.ROOM_MIN_SIZE, random.getInt(room.h * 0.8, room.h * 0.9)));
       const x = random.getInt(room.x, room.x + room.w - w);
       const y = random.getInt(room.y, room.y + room.h - h);
 
       const rect = new Rectangle(x, y, w, h);
+      //const rect = new Rectangle(x, y, w, h);
       this.tempRooms.push(rect);
     }
   }
@@ -122,7 +126,7 @@ class bspGenerator {
     const y2 = float2int(node.B.leaf.GetCenterY());
 
     //console.log(x1, y1, x2, y2);
-    corridos.push(new Rectangle(x1 - 1, y1 - 1, x2 - 1, y2 - 1));
+    corridos.push(new Rectangle(x1+1, y1 + 1, x2 + 1, y2 + 1));
 
     //game.level.halls.push()
 

@@ -109,11 +109,17 @@ export default class Level {
     }
   }
 
-  makeWalls(x1: number, y1: number, x2: number, y2: number) {
+  async makeFloors(x1: number, y1: number, x2: number, y2: number) {
     const y = y2 - y1;
     const x = x2 - x1;
 
     this.dig(x1, y1, x, y);
+  }
+
+
+  async makeWalls(x1: number, y1: number, x2: number, y2: number) {
+    const y = y2 - y1;
+    const x = x2 - x1;
 
 
     for (let i = 0; i <= y; i++) {
@@ -121,13 +127,10 @@ export default class Level {
       this.setWall(x2, y1 + i);
     }
 
-
     for (let i = 0; i <= x; i++) {
       this.setWall(x1 + i, y1);
       this.setWall(x1 + i, y2);
     }
-
-
   }
 
   fillUnusedTiles() {
@@ -161,6 +164,7 @@ export default class Level {
       this.setFloor(x + (w / 2), y + h);
       this.setFloor(x + (w / 2), y + h + 1);
     }
+    //console.log(x, y, w, h, wall);
   }
 
 
@@ -222,7 +226,6 @@ export default class Level {
         setPathmapId(x, y, id);
     };
 
-
     let distance = 0; // counting travelling distance
     for (let i = 0; i < maxLen; i++) {
       for (let x = sx - (i + 1); x < sx + i + 1; x++) { // in every step, increase harvesting area by 2
@@ -235,14 +238,16 @@ export default class Level {
             trySetPathMap(x, y - 1, i + 1);
             trySetPathMap(x, y + 1, i + 1);
 
-            if (x === ex && y === ey)
-              return 0;
+            if (x === ex && y === ey) {
+              return distance;
+            }
             distance++;
           }
         }
       }
     }
-    return distance;
+
+    return 0;
   }
 
   finalizePath(ex: number, ey: number, distance: number) {
@@ -251,11 +256,14 @@ export default class Level {
     let x = ex;
     let y = ey;
 
-    for (let i = 0; i < distance; i++) {
-      const pathmapValue = this.pathMap[this.convertXYtoID(x, y)] - 1;
+    for (let i = distance; i >= 0; i--) {
+      const pathmapValue = i; //this.pathMap[this.convertXYtoID(x, y)] - 1;
 
-      const oldX = x;
-      const oldY = y;
+      const nd = new PathNode();
+      nd.x = x;
+      nd.y = y;
+      nd.distance = pathmapValue;
+      this.nodes.push(nd);
 
       if (this.getPathmapId(x - 1, y) === pathmapValue)
         x--;
@@ -266,27 +274,24 @@ export default class Level {
       else if (this.getPathmapId(x, y + 1) === pathmapValue)
         y++;
 
-      if (oldX !== x || oldY !== y) {
-        const nd = new PathNode();
-        nd.x = x;
-        nd.y = y;
-        nd.distance = pathmapValue + 1;
-        this.nodes.push(nd);
-      }
+
+
+
     }
   }
 
-  createPath(sx: number, sy: number, ex: number, ey: number, maxLen: number) {
+  async createPath(sx: number, sy: number, ex: number, ey: number, maxLen: number) {
     this.setupPathStart(sx, sy);
 
     const distance = this.harvestMap(sx, sy, ex, ey, maxLen);
+    console.log(distance);
     if (distance === 0)
       return;
 
     this.finalizePath(ex, ey, distance);
   }
 
-  setupMap(seed: number, lvl: number) {
+  async setupMap(seed: number, lvl: number) {
     this.depth = lvl;
     this.levelSeed = seed;
     this.nodeTemp = [];
@@ -297,50 +302,55 @@ export default class Level {
     for (let i = 0; i < this.width * this.height; i++)
       this.tiles[i] = new Tile();
 
-    const splitAmount = random.getInt(4, 8);
+    const splitAmount = random.getInt(3, 8);
     this.root = new bspGenerator(3, 3, this.width - 4, this.height - 4, splitAmount);
   }
 
-  makeRooms() {
+  async makeRooms() {
     for (let i = 0; i < ensure(this.root).rooms.length; i++) {
       const tempRoom = ensure(this.root).tempRooms[i];
 
       const room = new Rectangle(tempRoom.x, tempRoom.y, tempRoom.w, tempRoom.h);
-
-      this.makeWalls(room.x, room.y, room.x + room.w, room.y + room.h); 0
+      await this.makeFloors(room.x, room.y, room.x + room.w, room.y + room.h);
+      await this.makeWalls(room.x, room.y, room.x + room.w, room.y + room.h);
       this.makeDoorHole(room.x, room.y, room.w, room.h, random.getInt(0, 4));
     }
   }
 
-  preparingCorridors() {
+  async preparingCorridors() {
     this.failedCorridos = [];
+    for (let i = 1; i < ensure(this.root).rooms.length; i++) {
+      const startPosition = ensure(this.root).rooms[i - 1].GetCenter();
+      const endPosition = ensure(this.root).rooms[i].GetCenter();
 
-    for (let i = 0; i < ensure(this.root).corridos.length; i++) {
-      const corridor = ensure(this.root).corridos[i]
       this.nodes = [];
-      this.createPath(corridor.x, corridor.y, corridor.w, corridor.h, 128);
+      await this.createPath(startPosition?.x, startPosition?.y, endPosition?.x, endPosition?.y, 128);
 
       if (this.nodes.length === 0) {
+        const corridor = new Rectangle(startPosition.x, startPosition.y, endPosition.x, endPosition.y);
         this.failedCorridos.push(corridor);
       }
 
       for (let j = 0; j < this.nodes.length; j++) {
         this.nodeTemp.push(this.nodes[j]);
       }
+
     }
+
+    console.log("failed: " + this.failedCorridos.length);
   }
 
-  makeCorridors() {
+  async makeCorridors() {
     for (let i = 0; i < this.nodeTemp.length; i++) {
       const node = this.nodeTemp[i];
       this.setFloor(node.x, node.y);
     }
 
+
     for (let i = 0; i < this.failedCorridos.length; i++) {
       const corridor = this.failedCorridos[i];
       this.createNaivePath(corridor.x, corridor.y, corridor.w, corridor.h);
     }
-
   }
 
   findFreeRoom(ignoreRoom: number) {
@@ -351,6 +361,10 @@ export default class Level {
       }
     }
     return 0;
+  }
+
+  setupDoors() {
+    //
   }
 
   setupStarsAndStairs() {
@@ -364,11 +378,10 @@ export default class Level {
   }
 
   async generateMap(seed: number, lvl: number) {
-    this.setupMap(seed, lvl);
-
-    this.makeRooms();
-    this.preparingCorridors();
-    this.makeCorridors();
+    await this.setupMap(seed, lvl);
+    await this.makeRooms();
+    await this.preparingCorridors();
+    await this.makeCorridors();
 
     this.fillUnusedTiles();
 
@@ -376,6 +389,8 @@ export default class Level {
       this.smoothMap();
       this.makeCorridors();
     }
+
+    this.setupDoors();
 
     //set start and end
     this.setupStarsAndStairs();
@@ -461,8 +476,9 @@ export default class Level {
 
   }
 
-  render() {
+  async render() {
     const camera = ensure(game.camera);
+
 
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
@@ -487,7 +503,21 @@ export default class Level {
         }
       }
     }
+
+    /*
+    for (let i = 0; i < this.nodeTemp.length; i++) {
+      const x = this.nodeTemp[i].x - camera.x;
+      const y = this.nodeTemp[i].y - camera.y;
+      game.drawChar('?', x, y, "#FFF");
+    }
+    */
+
+
+
+
   }
+
+
 
 }
 

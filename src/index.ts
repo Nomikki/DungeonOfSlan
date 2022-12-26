@@ -195,10 +195,10 @@ export class Game {
     this.renderVersion();
   }
 
-  render() {
+  async render() {
     this.clear(new Color(0x3, 0x3, 0x5));
 
-    this.level?.render();
+    await this.level?.render();
     for (let i = 0; i < this.actors.length; i++) {
       this.actors[i].Render();
     }
@@ -256,7 +256,7 @@ export class Game {
     ensure(this.player).computeFov();
 
     this.camera?.update(ensure(this.player));
-    this.render();
+    await this.render();
 
     while (true) {
       //const oldKey = this.lastKey;
@@ -281,7 +281,7 @@ export class Game {
             }
           }
         }
-        this.render();
+        await this.render();
       }
 
     }
@@ -388,7 +388,7 @@ export class Game {
 
   }
 
-  init() {
+  async init() {
     this.level = new Level(80, 40);
   }
 
@@ -400,7 +400,7 @@ export class Game {
     this.actors = [];
     this.level = new Level(80, 40);
     this.depth++;
-    this.level?.generateMap(this.masterSeed, this.depth);
+    await this.level?.generateMap(this.masterSeed, this.depth);
     this.actors.push(tempPlayer);
 
     ensure(this.player).pos = ensure(this.level).startPosition;
@@ -414,7 +414,7 @@ export class Game {
 
   }
 
-  newGame() {
+  async newGame() {
     //this.masterSeed = 1337;
     this.masterSeed = float2int(Math.random() * 0x7ffffff);
 
@@ -435,7 +435,7 @@ export class Game {
     //this.masterSeed = i;
     //console.log(i);
 
-    this.level?.generateMap(this.masterSeed, this.depth);
+    await this.level?.generateMap(this.masterSeed, this.depth);
     /*
     console.log(`Welcome to ${this.level?.dungeonName}`);
     }
@@ -538,14 +538,14 @@ export class Game {
     console.log(amountOfMonsters / amountOfRooms, amountOfMonsters, amountOfRooms);
   }
 
-  load() {
+  async load() {
     // just placeholder
-    this.newGame();
+    await this.newGame();
   }
 
   async run() {
-    this.init();
-    this.load();
+    await this.init();
+    await this.load();
     await this.gameLoop();
   }
 }

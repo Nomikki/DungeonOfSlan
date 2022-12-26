@@ -104,7 +104,7 @@ export class PlayerAI extends Ai {
 
     const handleNextLevel = async () => {
       if (game.level?.stairs.x === owner.pos.x && game.level?.stairs.y === owner.pos.y) {
-        game.nextLevel();
+        await game.nextLevel();
       } else {
         game.log?.addToLog(`Tässä ei ole portaita.`, "#999");
       }
