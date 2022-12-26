@@ -111,6 +111,52 @@ export class PlayerAI extends Ai {
       game.gamestatus = GameStatus.NEW_TURN;
     };
 
+    const handleOpenDoor = async () => {
+      const actors = game.findNearestDoor(owner.pos.x, owner.pos.y, true);
+      for (let i = 0; i < actors.length; i++) {
+        const actor = actors[i];
+
+        actor.blocks = false;
+        actor.ch = '/';
+      }
+
+      await owner.computeFov();
+
+      if (actors.length === 1) {
+        game.log?.addToLog(`Avasit oven.`, "#999");
+      } else if (actors.length > 1) {
+        game.log?.addToLog(`Avasit ovia.`, "#999");
+      } else {
+        game.log?.addToLog(`Tässä ei ole ovea vieressä.`, "#999");
+      }
+
+
+      game.gamestatus = GameStatus.NEW_TURN;
+    };
+
+    const handleCloseDoor = async () => {
+      const actors = game.findNearestDoor(owner.pos.x, owner.pos.y, false);
+      for (let i = 0; i < actors.length; i++) {
+        const actor = actors[i];
+
+        actor.blocks = true;
+        actor.ch = 'D';
+      }
+
+      await owner.computeFov();
+
+      if (actors.length === 1) {
+        game.log?.addToLog(`Suljit oven.`, "#999");
+      } else if (actors.length > 1) {
+        game.log?.addToLog(`Suljit ovia.`, "#999");
+      } else {
+        game.log?.addToLog(`Tässä ei ole auki olevia ovea vieressä.`, "#999");
+      }
+
+
+      game.gamestatus = GameStatus.NEW_TURN;
+    };
+
     if (key === "g") {
       await pickupItem();
     }
@@ -118,6 +164,10 @@ export class PlayerAI extends Ai {
       await useItem();
     } else if (key === ">") {
       await handleNextLevel();
+    } else if (key === "o") {
+      await handleOpenDoor();
+    } else if (key === "c") {
+      await handleCloseDoor();
     }
     /*
     else if (key === "R") {
@@ -134,10 +184,17 @@ export class PlayerAI extends Ai {
 
     for (let i = 0; i < game.actors.length; i++) {
       const actor = game.actors[i];
+
+
+
       if (actor.attacker && actor.destructible && !actor.destructible.isDead() && actor.pos.x === target.x && actor.pos.y === target.y) {
         await ensure(owner.attacker).attack(owner, actor);
         return false;
       }
+
+      //doors and other obstacles
+      if (actor.blocks && actor.pos.x === target.x && actor.pos.y === target.y)
+        return false;
     }
 
     // look for corpses

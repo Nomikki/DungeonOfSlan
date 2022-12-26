@@ -208,6 +208,29 @@ export class Game {
     this.renderUI();
   }
 
+  findNearestDoor(x: number, y: number, isClosed: boolean) {
+    const actors = [];
+
+    for (let i = 0; i < this.actors.length; i++) {
+      const actor = this.actors[i];
+      if (actor.name === "Door" && actor.pos.x === x - 1 && actor.pos.y === y && actor.blocks === isClosed) {
+        actors.push(actor);
+      }
+      else if (actor.name === "Door" && actor.pos.x === x + 1 && actor.pos.y === y && actor.blocks === isClosed) {
+        actors.push(actor);
+      }
+      else if (actor.name === "Door" && actor.pos.x === x && actor.pos.y === y - 1 && actor.blocks === isClosed) {
+        actors.push(actor);
+      }
+      else if (actor.name === "Door" && actor.pos.x === x && actor.pos.y === y + 1 && actor.blocks === isClosed) {
+        actors.push(actor);
+      }
+
+    }
+    return actors;
+  }
+
+
   getClosestEnemy(pos: vec2, range: number) {
     let closest: Actor | undefined;
     let bestDistance = 10000;
