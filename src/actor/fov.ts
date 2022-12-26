@@ -74,7 +74,7 @@ export class FieldOfView {
         this.setInFov(new vec2(float2int(px), float2int(py)), 2);
 
 
-        if (game.isWall(p)) {
+        if (!game.canWalk(p)) {
           break;
         }
 

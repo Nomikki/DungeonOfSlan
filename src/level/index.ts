@@ -9,9 +9,11 @@ import bspGenerator from "./bsp_generator";
 //import bspGenerator from "./bsp_generator";
 
 enum TileTypes {
-  unused = 0,
-  floor = 1,
-  wall = 2,
+  unused,
+  roomFloor,
+  corridorFloor,
+  roomWall,
+  corridorWall,
 }
 
 class PathNode {
@@ -85,35 +87,47 @@ export default class Level {
     return false;
   }
 
-  setWall(x: number, y: number) {
+  isRoomWall(x: number, y: number): boolean {
+    if (x >= 0 && x <= this.width && y >= 0 && y <= this.height) {
+      const index = x + y * this.width;
+      if (this.tiles[index].type === TileTypes.roomWall)
+        return this.tiles[index].collide;
+
+      return false;
+    }
+
+    return false;
+  }
+
+  setWall(x: number, y: number, tileType: number) {
     x = float2int(x);
     y = float2int(y);
 
     this.tiles[x + y * this.width].collide = true;
-    this.tiles[x + y * this.width].type = TileTypes.wall;
+    this.tiles[x + y * this.width].type = tileType;
   }
 
-  setFloor(x: number, y: number) {
+  setFloor(x: number, y: number, tileType: number) {
     x = float2int(x);
     y = float2int(y);
 
     this.tiles[x + y * this.width].collide = false;
-    this.tiles[x + y * this.width].type = TileTypes.floor;
+    this.tiles[x + y * this.width].type = tileType;
   }
 
-  dig(x1: number, y1: number, x2: number, y2: number) {
+  dig(x1: number, y1: number, x2: number, y2: number, tileType: number) {
     for (let y = y1; y < y1 + y2; y++) {
       for (let x = x1; x < x1 + x2; x++) {
-        this.setFloor(x, y);
+        this.setFloor(x, y, tileType);
       }
     }
   }
 
-  async makeFloors(x1: number, y1: number, x2: number, y2: number) {
+  async makeFloors(x1: number, y1: number, x2: number, y2: number, tileType: number) {
     const y = y2 - y1;
     const x = x2 - x1;
 
-    this.dig(x1, y1, x, y);
+    this.dig(x1, y1, x, y, tileType);
   }
 
 
@@ -123,13 +137,13 @@ export default class Level {
 
 
     for (let i = 0; i <= y; i++) {
-      this.setWall(x1, y1 + i);
-      this.setWall(x2, y1 + i);
+      this.setWall(x1, y1 + i, TileTypes.roomWall);
+      this.setWall(x2, y1 + i, TileTypes.roomWall);
     }
 
     for (let i = 0; i <= x; i++) {
-      this.setWall(x1 + i, y1);
-      this.setWall(x1 + i, y2);
+      this.setWall(x1 + i, y1, TileTypes.roomWall);
+      this.setWall(x1 + i, y2, TileTypes.roomWall);
     }
   }
 
@@ -137,7 +151,7 @@ export default class Level {
     this.tiles.map(tile => {
       if (tile.type === TileTypes.unused) {
         tile.collide = true;
-        tile.type = TileTypes.wall;
+        tile.type = TileTypes.corridorWall;
       }
     });
   }
@@ -145,24 +159,24 @@ export default class Level {
 
   makeDoorHole(x: number, y: number, w: number, h: number, wall: number) {
     if (wall == 0) {
-      this.setFloor(x - 1, y + (h / 2));
-      this.setFloor(x, y + (h / 2));
-      this.setFloor(x + 1, y + (h / 2));
+      this.setFloor(x - 1, y + (h / 2), TileTypes.roomFloor);
+      this.setFloor(x, y + (h / 2), TileTypes.corridorFloor);
+      //this.setFloor(x + 1, y + (h / 2), TileTypes.corridorFloor);
     }
     else if (wall == 1) {
-      this.setFloor(x + w - 1, y + (h / 2));
-      this.setFloor(x + w, y + (h / 2));
-      this.setFloor(x + w + 1, y + (h / 2));
+      this.setFloor(x + w - 1, y + (h / 2), TileTypes.roomFloor);
+      this.setFloor(x + w, y + (h / 2), TileTypes.corridorFloor);
+      //this.setFloor(x + w + 1, y + (h / 2), TileTypes.corridorFloor);
     }
     else if (wall == 2) {
-      this.setFloor(x + (w / 2), y - 1);
-      this.setFloor(x + (w / 2), y);
-      this.setFloor(x + (w / 2), y + 1);
+      this.setFloor(x + (w / 2), y - 1, TileTypes.roomFloor);
+      this.setFloor(x + (w / 2), y, TileTypes.corridorFloor);
+      //this.setFloor(x + (w / 2), y + 1, TileTypes.corridorFloor);
     }
     else if (wall == 3) {
-      this.setFloor(x + (w / 2), y + h - 1);
-      this.setFloor(x + (w / 2), y + h);
-      this.setFloor(x + (w / 2), y + h + 1);
+      this.setFloor(x + (w / 2), y + h - 1, TileTypes.roomFloor);
+      this.setFloor(x + (w / 2), y + h, TileTypes.corridorFloor);
+      //this.setFloor(x + (w / 2), y + h + 1, TileTypes.corridorFloor);
     }
     //console.log(x, y, w, h, wall);
   }
@@ -186,7 +200,9 @@ export default class Level {
       if (x == ex && y == ey)
         break;
 
-      this.setFloor(x, y);
+      const id = this.convertXYtoID(x, y);
+      if (this.tiles[id].type !== TileTypes.roomFloor)
+        this.setFloor(x, y, TileTypes.corridorFloor);
     }
   }
 
@@ -311,7 +327,7 @@ export default class Level {
       const tempRoom = ensure(this.root).tempRooms[i];
 
       const room = new Rectangle(tempRoom.x, tempRoom.y, tempRoom.w, tempRoom.h);
-      await this.makeFloors(room.x, room.y, room.x + room.w, room.y + room.h);
+      await this.makeFloors(room.x, room.y, room.x + room.w, room.y + room.h, TileTypes.roomFloor);
       await this.makeWalls(room.x, room.y, room.x + room.w, room.y + room.h);
       this.makeDoorHole(room.x, room.y, room.w, room.h, random.getInt(0, 4));
     }
@@ -343,7 +359,9 @@ export default class Level {
   async makeCorridors() {
     for (let i = 0; i < this.nodeTemp.length; i++) {
       const node = this.nodeTemp[i];
-      this.setFloor(node.x, node.y);
+      const id = this.convertXYtoID(node.x, node.y);
+      if (this.tiles[id].type !== TileTypes.roomFloor)
+        this.setFloor(node.x, node.y, TileTypes.corridorFloor);
     }
 
 
@@ -363,8 +381,43 @@ export default class Level {
     return 0;
   }
 
+  checkCornerWalls(x: number, y: number) {
+    if (this.isWall(x - 1, y - 1) === false && this.isWall(x + 1, y - 1) === true &&
+      this.isWall(x - 1, y + 1) === true && this.isWall(x + 1, y + 1) === true)
+      return true;
+
+    if (this.isWall(x - 1, y - 1) === true && this.isWall(x + 1, y - 1) === false &&
+      this.isWall(x - 1, y + 1) === true && this.isWall(x + 1, y + 1) === true)
+      return true;
+
+    if (this.isWall(x - 1, y - 1) === true && this.isWall(x + 1, y - 1) === true &&
+      this.isWall(x - 1, y + 1) === false && this.isWall(x + 1, y + 1) === true)
+      return true;
+
+    if (this.isWall(x - 1, y - 1) === true && this.isWall(x + 1, y - 1) === true &&
+      this.isWall(x - 1, y + 1) === true && this.isWall(x + 1, y + 1) === false)
+      return true;
+
+    return false;
+  }
+
   setupDoors() {
-    //
+
+    console.log("nodes: " + this.nodeTemp.length);
+    let currentTileType = 0;
+    for (let i = 1; i < this.nodeTemp.length; i++) {
+      const oldTileType = currentTileType;
+      const node = this.nodeTemp[i];
+      currentTileType = this.tiles[this.convertXYtoID(node.x, node.y)].type;
+
+      if (oldTileType !== currentTileType && currentTileType === TileTypes.corridorFloor) {
+        if ((this.isRoomWall(node.x - 1, node.y) === true && this.isRoomWall(node.x + 1, node.y) === true) ||
+          (this.isRoomWall(node.x, node.y - 1) === true && this.isRoomWall(node.x, node.y + 1) === true)) {
+          if (this.checkCornerWalls(node.x, node.y) === false)
+            game.addItem("Door", this.nodeTemp[i].x, this.nodeTemp[i].y);
+        }
+      }
+    }
   }
 
   setupStarsAndStairs() {
@@ -451,9 +504,9 @@ export default class Level {
         {
           const index = x + y * this.width;
           if (this.noisemap[index] !== 0) {
-            this.setFloor(x, y);
+            this.setFloor(x, y, TileTypes.roomFloor);
           } else {
-            this.setWall(x, y);
+            this.setWall(x, y, TileTypes.roomWall);
           }
         }
       }
@@ -487,13 +540,20 @@ export default class Level {
 
         const fov = game.player?.fov?.isInFov(new vec2(x, y));
         if (fov === 2) {
+          let ch = ' ';
+          const tile = this.tiles[x + y * this.width];
+          if (tile.type === TileTypes.corridorFloor)
+            ch = '`';
+          else if (tile.type === TileTypes.corridorWall)
+            ch = '#';
+          else if (tile.type === TileTypes.roomFloor)
+            ch = '.';
+          else if (tile.type === TileTypes.roomWall)
+            ch = '#';
 
 
-          if (this.tiles[x + y * this.width].collide == true)
-            game.drawChar("#", px, py, '#999');
-          else {
-            game.drawChar('.', px, py, '#999');
-          }
+          game.drawChar(ch, px, py, '#999');
+
         } else if (fov === 1) {
           if (this.tiles[x + y * this.width].collide == true)
             game.drawChar("*", px, py, '#999');

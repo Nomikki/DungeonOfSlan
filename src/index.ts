@@ -299,6 +299,7 @@ export class Game {
     let character = "?";
     let pickableType = undefined;
     let blockFov = false;
+    let blocks = false;
 
     if (name === "Healing potion") {
       color = "#FF00FF";
@@ -313,11 +314,18 @@ export class Game {
       color = "#FFFFFF";
       character = '>';
       blockFov = true;
+    } else if (name === "Door") {
+      color = "#A08000";
+      character = 'D';
+      blockFov = false;
+      blocks = true;
+
     }
 
     this.addUnit(name, x, y, character, color);
     const item = this.actors[this.actors.length - 1];
     item.blockFov = blockFov;
+    item.blocks = blocks;
 
     if (pickableType)
       item.pickable = pickableType;
