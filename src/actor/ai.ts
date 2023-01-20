@@ -187,8 +187,8 @@ export class PlayerAI extends Ai {
 
 
 
-      if (actor.attacker && actor.destructible && !actor.destructible.isDead() && actor.pos.x === target.x && actor.pos.y === target.y) {
-        await ensure(owner.attacker).attack(owner, actor);
+      if (actor.attacks && actor.destructible && !actor.destructible.isDead() && actor.pos.x === target.x && actor.pos.y === target.y) {
+        await ensure(owner.attacks)[owner.selectedAttack].attack(owner, actor);
         return false;
       }
 
@@ -249,7 +249,8 @@ export class MonsterAi extends Ai {
         owner.pos.y += stepdy;
       }
     } else {
-      await owner.attacker?.attack(owner, ensure(game.player));
+      console.log(owner);
+      await ensure(owner.attacks)[owner.selectedAttack].attack(owner, ensure(game.player));
     }
 
   }

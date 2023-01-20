@@ -1,5 +1,5 @@
 todo:
-ovet - paikoilleen, sulkeminen, avaaminen
+% ovet - paikoilleen, sulkeminen, avaaminen
 lukot oviin
 ovien potkiminen
 raahaaminen, työntäminen
@@ -7,6 +7,7 @@ raahaaminen, työntäminen
 help-systeemi - paina ? ja se kertoo peruskomentoja
 
 data-interface jolla generoidaan itemit ja vihut
+  % vihut
 vihut droppaa itemeitä
 range-attack (jousiase esim)
 

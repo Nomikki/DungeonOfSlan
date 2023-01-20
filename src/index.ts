@@ -1,12 +1,13 @@
 import "@/index.scss";
 import Actor from "./actor";
-import { MonsterAi, PlayerAI } from "./actor/ai";
+import { PlayerAI } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
 import { Container } from "./actor/container";
-import { MonsterDestructible, PlayerDestructible } from "./actor/destructible";
+import { PlayerDestructible } from "./actor/destructible";
 import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
 import Level, { random } from "./level";
+import { createMonster } from "./monsterGenerator";
 import { ensure, float2int, rgbToHex } from "./utils";
 import { Camera } from "./utils/camera";
 import { Log } from "./utils/log";
@@ -375,7 +376,7 @@ export class Game {
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
       this.player.destructible = new PlayerDestructible(hp, defense, corpseName);
-      this.player.attacker = new Attacker(attackPower, accuracy);
+      this.player.attacks?.push(new Attacker(attackPower, accuracy));
       ensure(this.player).ai = new PlayerAI();
       this.player.container = new Container(26);
       this.player.fov = new FieldOfView(ensure(this.level).width, ensure(this.level).height);
@@ -384,38 +385,12 @@ export class Game {
       return;
     }
 
-    if (name === "Orc") {
-      character = 'O';
-      color = "#00FF00";
-      hp = 7;
-      defense = 2;
-      attackPower = 5;
-      accuracy = 9;
-    }
 
-    else if (name === "Rotta") {
-      character = 'r';
-      color = "#808080";
-      hp = 3;
-      defense = 1;
-      attackPower = 2;
-      accuracy = 3;
+    const monster = createMonster("rat", x, y);
+    if (monster) {
+      this.actors.push(monster);
     }
-    else if (name === "Jättirotta") {
-      character = 'R';
-      color = "#808080";
-      hp = 5;
-      defense = 1;
-      attackPower = 4;
-      accuracy = 5;
-    }
-
-    this.addUnit(name, x, y, character, color);
-    const monster = this.actors[this.actors.length - 1];
-    monster.ai = new MonsterAi();
-    monster.attacker = new Attacker(attackPower, accuracy);
-    monster.destructible = new MonsterDestructible(hp, defense, corpseName);
-
+    return;
 
   }
 

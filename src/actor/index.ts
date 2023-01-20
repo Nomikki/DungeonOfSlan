@@ -19,10 +19,12 @@ export default class Actor {
 
   ai?: Ai | PlayerAI | MonsterAi;
   destructible?: PlayerDestructible | MonsterDestructible | ItemDestructible;
-  attacker?: Attacker;
+  attacks: Attacker[];
   container?: Container;
   pickable?: Pickable;
   fov?: FieldOfView;
+
+  selectedAttack = 0;
 
 
   constructor(name: string, ch: string, color: string) {
@@ -34,6 +36,7 @@ export default class Actor {
     this.blocks = true;
     this.fovOnly = true;
     this.blockFov = false;
+    this.attacks = [];
   }
 
   async update() {
