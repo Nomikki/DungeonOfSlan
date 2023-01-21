@@ -25,7 +25,13 @@ export const abilityBonus = (ability: number): number => {
   return Math.floor((ability - 10) / 2);
 };
 
-
 export const sign = (s: number) => {
   return s >= 0 ? '+' : '';
+};
+
+
+export const sleep = async (milliseconds: number) => {
+  await new Promise(resolve => {
+    return setTimeout(resolve, milliseconds)
+  });
 };

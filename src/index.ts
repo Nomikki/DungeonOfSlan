@@ -110,6 +110,19 @@ export class Game {
     this.ctx.fillText(ch, x * this.fontSize, y * this.fontSize + this.fontSize);
   }
 
+  drawCircle(centerX: number, centerY: number, radius: number, color: string, segments: number)
+  {
+
+    for (let a = 0; a < 360; a += (360 / segments))
+    {
+      const dx = Math.sin(a / 180.0 * 3.14) * radius;
+      const dy = Math.cos(a / 180.0 * 3.14) * radius;
+
+      this.drawChar('O', float2int(centerX + dx),  float2int(centerY + dy), color);
+
+    }
+  }
+
   /*
   drawRectangle(
     x: number,
