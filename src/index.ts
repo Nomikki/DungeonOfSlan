@@ -110,15 +110,13 @@ export class Game {
     this.ctx.fillText(ch, x * this.fontSize, y * this.fontSize + this.fontSize);
   }
 
-  drawCircle(centerX: number, centerY: number, radius: number, color: string, segments: number)
-  {
+  drawCircle(centerX: number, centerY: number, radius: number, color: string, segments: number) {
 
-    for (let a = 0; a < 360; a += (360 / segments))
-    {
+    for (let a = 0; a < 360; a += (360 / segments)) {
       const dx = Math.sin(a / 180.0 * 3.14) * radius;
       const dy = Math.cos(a / 180.0 * 3.14) * radius;
 
-      this.drawChar('O', float2int(centerX + dx),  float2int(centerY + dy), color);
+      this.drawChar('O', float2int(centerX + dx), float2int(centerY + dy), color);
 
     }
   }
@@ -218,11 +216,11 @@ export class Game {
     this.drawText(`WIS: ${abis?.wis}`, 46, 0, "#FFF");
     this.drawText(`INT: ${abis?.int}`, 56, 0, "#FFF");
 
-    this.drawText(`${sign(abiModifiers.con)}${abiModifiers?.con}`, 16+5, 1, "#FFF");
-    this.drawText(`${sign(abiModifiers.str)}${abiModifiers?.str}`, 26+5, 1, "#FFF");
-    this.drawText(`${sign(abiModifiers.dex)}${abiModifiers?.dex}`, 36+5, 1, "#FFF");
-    this.drawText(`${sign(abiModifiers.wis)}${abiModifiers?.wis}`, 46+5, 1, "#FFF");
-    this.drawText(`${sign(abiModifiers.int)}${abiModifiers?.int}`, 56+5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.con)}${abiModifiers?.con}`, 16 + 5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.str)}${abiModifiers?.str}`, 26 + 5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.dex)}${abiModifiers?.dex}`, 36 + 5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.wis)}${abiModifiers?.wis}`, 46 + 5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.int)}${abiModifiers?.int}`, 56 + 5, 1, "#FFF");
 
 
   }
@@ -333,7 +331,7 @@ export class Game {
         if (this.gamestatus !== GameStatus.DEFEAT)
           this.gamestatus = GameStatus.IDLE;
 
-
+        
         await ensure(this.player).update();
         this.camera?.update(ensure(this.player));
 
@@ -345,7 +343,9 @@ export class Game {
               await this.actors[i].update();
             }
           }
+          await this.level?.update();
         }
+
         await this.render();
       }
 
@@ -405,7 +405,7 @@ export class Game {
     let defense = 2;
     const corpseName = "carcass of " + name;
     let attackPower = "1d4";
-    
+
 
     if (name === "Hero") {
       color = "#FFF";
@@ -413,11 +413,11 @@ export class Game {
       hp = 15;
       defense = 10;
       attackPower = "1d4";
-      
+
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
       this.player.destructible = new PlayerDestructible(hp, defense, corpseName);
-      
+
       this.player.destructible.abilities.con = 10;
       this.player.destructible.abilities.dex = 12;
       this.player.destructible.abilities.str = 18;

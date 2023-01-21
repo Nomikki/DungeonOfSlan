@@ -1,4 +1,4 @@
-import { capitalize, ensure, float2int } from "@/utils";
+import { capitalize, ensure, float2int, rgbToHex } from "@/utils";
 import Randomizer from "@/utils/random";
 import Rectangle from "@/utils/rectangle";
 import vec2 from "@/utils/vec2";
@@ -34,6 +34,8 @@ class Tile {
   collide = false;
   color = "#000000";
   character = "?";
+  scentTemp = 0;
+  scent = 0;
 }
 
 export const random = new Randomizer();
@@ -78,7 +80,7 @@ export default class Level {
   }
 
   isWall(x: number, y: number): boolean {
-    if (x >= 0 && x <= this.width && y >= 0 && y <= this.height) {
+    if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
       const index = x + y * this.width;
 
       return this.tiles[index].collide;
@@ -152,6 +154,8 @@ export default class Level {
       if (tile.type === TileTypes.unused) {
         tile.collide = true;
         tile.type = TileTypes.corridorWall;
+        tile.scent = 0;
+        tile.scentTemp = 0;
       }
     });
   }
@@ -180,7 +184,6 @@ export default class Level {
     }
     //console.log(x, y, w, h, wall);
   }
-
 
 
   createNaivePath(sx: number, sy: number, ex: number, ey: number) {
@@ -529,6 +532,101 @@ export default class Level {
 
   }
 
+  async update() {
+    this.calculateScents();
+  }
+
+  getScentValue(x: number, y: number) {
+    if (x >= 0 && y >= 0 && x < this.width && y < this.height) {
+
+      return this.tiles[x + y * this.width].scent;
+    }
+
+    return 0;
+  }
+
+  setScentValue(x: number, y: number, value: number) {
+    if (x >= 0 && y >= 0 && x < this.width && y < this.height) {
+      this.tiles[x + y * this.width].scent = value;
+    }
+  }
+
+  calculateScents() {
+    const amountOfTiles = this.width * this.height;
+
+    //clear temp data
+
+    for (let i = 0; i < amountOfTiles; i++) {
+      this.tiles[i].scentTemp = 0;
+      if (this.tiles[i].scent > 0) {
+        this.tiles[i].scent -= 0.8;
+      }
+    }
+
+
+    //calculate average
+    for (let y = 1; y < this.height - 1; y++) {
+      for (let x = 1; x < this.width - 1; x++) {
+        let avg = 0;
+        const s = 2;
+        let amount = 0;
+        for (let yy = y - s; yy <= y + s; yy++) {
+          for (let xx = x - s; xx <= x + s; xx++) {
+            if (this.isWall(xx, yy) === false) {
+              
+              amount++;
+              const v = this.getScentValue(xx, yy);
+              avg += v;
+            } 
+          }
+        }
+
+        avg /= amount;
+
+        
+        if (avg > 255)
+          avg = 255;
+        if (avg < 0)
+          avg = 0;
+          
+
+        this.tiles[x + y * this.width].scentTemp = avg;
+
+      }
+    }
+
+    //update scent map
+
+    for (let i = 0; i < amountOfTiles; i++) {
+      this.tiles[i].scent = 0;
+      if (!this.tiles[i].collide) {
+        this.tiles[i].scent = this.tiles[i].scentTemp;
+      }
+    }
+
+  }
+
+  async renderScent() {
+    const camera = ensure(game.camera);
+
+
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const px = x - camera.x;
+        const py = y - camera.y;
+
+        const scentValueRaw = float2int(this.getScentValue(x, y) * 10);
+        let scentValue = scentValueRaw;
+        if (scentValue < 0) scentValue = 0;
+        if (scentValue > 255) scentValue = 255;
+
+
+        game.drawChar("s", px, py, rgbToHex(scentValue > 0 ? 255 : 0, scentValue, 0));
+
+      }
+    }
+  }
+
   async render() {
     const camera = ensure(game.camera);
 
@@ -571,6 +669,8 @@ export default class Level {
       game.drawChar('?', x, y, "#FFF");
     }
     */
+
+    //await this.renderScent();
 
 
 

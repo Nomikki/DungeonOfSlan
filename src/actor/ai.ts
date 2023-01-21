@@ -44,8 +44,8 @@ export class PlayerAI extends Ai {
         if (owner.fov) {
           await owner.computeFov();
         }
-
       }
+      await ensure(game.level).setScentValue(owner.pos.x, owner.pos.y, 255);
     }
 
   }
@@ -237,24 +237,59 @@ export class MonsterAi extends Ai {
 
 
   async update(owner: Actor) {
+    let justMove = false;
     //if destructible and alive
     if (owner.destructible && owner.destructible.isDead())
       return;
 
-    if (await this.canSee(owner, ensure(game.player).pos))
+    let targetFound = false;
+    // enemy can see, hear and/or smell player
+    if (await this.canSee(owner, ensure(game.player).pos)) {
       this.latestInterestingPoint = ensure(game.player).pos;
+      targetFound = true;
+    }
 
-    await this.moveOrAttack(owner, this.latestInterestingPoint);
+    if (targetFound === false) {
+      if (ensure(game.level)?.getScentValue(owner.pos.x, owner.pos.y) > 0) {
+        //find biggest value
+        let p = new vec2(owner.pos.x, owner.pos.y);
+        let biggestScentValue = 0;
+        for (let y = owner.pos.y - 1; y <= owner.pos.y + 1; y++) {
+          for (let x = owner.pos.x - 1; x <= owner.pos.x + 1; x++) {
+            const v = ensure(game.level).getScentValue(x, y);
+            if (v > biggestScentValue && !(x === owner.pos.x && y === owner.pos.y)) {
+              biggestScentValue = v;
+              p = new vec2(x, y);
+            }
+            targetFound = true;
+            this.latestInterestingPoint = p;
+
+          }
+        }
+      }
+      if (targetFound)
+      {
+        justMove = true;
+        console.log(`${owner.name} haistoi jotain`);
+      }
+    }
+
+    //nothing found
+    if (targetFound === false) {
+      return;
+    }
+
+    await this.moveOrAttack(owner, this.latestInterestingPoint, justMove);
   }
 
-  async moveOrAttack(owner: Actor, target: vec2) {
+  async moveOrAttack(owner: Actor, target: vec2, justMove: boolean) {
     let dx = target.x - owner.pos.x;
     let dy = target.y - owner.pos.y;
     const stepdx = (dx > 0 ? 1 : -1);
     const stepdy = (dy > 0 ? 1 : -1);
 
     const distance = float2int(Math.sqrt(dx * dx + dy * dy));
-    if (distance >= 2) {
+    if (distance >= 2 || justMove) {
 
       dx = float2int(Math.round(dx / distance));
       dy = float2int(Math.round(dy / distance));
@@ -275,7 +310,7 @@ export class MonsterAi extends Ai {
       //melee attack
 
       const targetActor = game.getActorFromXY(target);
-      if (targetActor) {
+      if (targetActor && targetActor != owner) {
         await ensure(owner.attacks)[owner.selectedAttack].attack(owner, ensure(targetActor));
       }
     }
