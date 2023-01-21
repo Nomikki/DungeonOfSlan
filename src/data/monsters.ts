@@ -24,6 +24,7 @@ export default [
         name: "dagger",
         damage: "1d4",
         damageType: "piercing",
+        abilityBonus: "dex",
       }
     ]
   },
@@ -35,7 +36,7 @@ export default [
 
     ch: "r",
     color: "#808080",
-    hp: 1,
+    hp: 6,
     ac: 10,
     xp: 5,
 
@@ -52,6 +53,7 @@ export default [
         name: "bite",
         damage: "1d1",
         damageType: "piercing",
+        abilityBonus: "dex",
       }
     ]
   }

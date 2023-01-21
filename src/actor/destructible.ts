@@ -45,6 +45,9 @@ export class Destructible {
   Die(owner: Actor) {
     owner.ch = '%';
     owner.color = "#800000";
+
+    game.log?.addToLog(`${owner.name} kuoli`, "#FFF");
+
     owner.name = this.corpseName;
     owner.blocks = false;
 

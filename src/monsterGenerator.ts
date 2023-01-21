@@ -17,6 +17,7 @@ interface AttacksInterface {
   name: string;
   damage: string;
   damageType: string;
+  abilityBonus: string,
 }
 
 interface MonsterInterface {
@@ -53,7 +54,7 @@ export const createMonster = (name: string, x: number, y: number): Actor | undef
     monster.pos.y = y;
 
     monster.ai = new MonsterAi();
-    monster.attacks.push(new Attacker(5, 5));
+    monster.attacks.push(new Attacker(monsterTemplate.attacks[0].damage, 5));
     monster.destructible = new Destructible(monsterTemplate.hp, monsterTemplate.ac, "carcass of " + name);
     return monster;
   }

@@ -363,7 +363,7 @@ export class Game {
     let hp = 10;
     let defense = 2;
     const corpseName = "carcass of " + name;
-    let attackPower = 1;
+    let attackPower = "1d4";
     let accuracy = 1;
 
     if (name === "Hero") {
@@ -371,7 +371,7 @@ export class Game {
       character = "@";
       hp = 15;
       defense = 10;
-      attackPower = 5;
+      attackPower = "1d4";
       accuracy = 10;
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
