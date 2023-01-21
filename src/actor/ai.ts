@@ -1,4 +1,5 @@
 //import vec2 from "@/utils/vec2";
+import { random } from "@/level";
 import { ensure, float2int } from "@/utils";
 import vec2 from "@/utils/vec2";
 import Actor from ".";
@@ -114,18 +115,33 @@ export class PlayerAI extends Ai {
 
     const handleOpenDoor = async () => {
       const actors = game.findNearestDoor(owner.pos.x, owner.pos.y, true);
+      let howManyDoorsOpened = 0;
       for (let i = 0; i < actors.length; i++) {
         const actor = actors[i];
+        let openTheDoor = false;
+        if (actor.name === "Door") {
+          openTheDoor = true;
+        } else {
+          if (random.getInt(0, 10) > 7) {
+            openTheDoor = true;
+            game.log?.addToLog(`Löysit salaoven!`, "#FFF"); 
+            await game.pressSpaceToContinue();
+          }
+        }
 
-        actor.blocks = false;
-        actor.ch = '/';
+        if (openTheDoor) {
+          actor.blocks = false;
+          actor.ch = '/';
+          howManyDoorsOpened++;
+        }
+
       }
 
       await owner.computeFov();
 
-      if (actors.length === 1) {
+      if (howManyDoorsOpened === 1) {
         game.log?.addToLog(`Avasit oven.`, "#999");
-      } else if (actors.length > 1) {
+      } else if (howManyDoorsOpened > 1) {
         game.log?.addToLog(`Avasit ovia.`, "#999");
       } else {
         game.log?.addToLog(`Tässä ei ole ovea vieressä.`, "#999");
@@ -267,8 +283,7 @@ export class MonsterAi extends Ai {
           }
         }
       }
-      if (targetFound)
-      {
+      if (targetFound) {
         justMove = true;
         console.log(`${owner.name} haistoi jotain`);
       }

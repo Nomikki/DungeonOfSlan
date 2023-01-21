@@ -243,17 +243,19 @@ export class Game {
 
     for (let i = 0; i < this.actors.length; i++) {
       const actor = this.actors[i];
-      if (actor.name === "Door" && actor.pos.x === x - 1 && actor.pos.y === y && actor.blocks === isClosed) {
-        actors.push(actor);
-      }
-      else if (actor.name === "Door" && actor.pos.x === x + 1 && actor.pos.y === y && actor.blocks === isClosed) {
-        actors.push(actor);
-      }
-      else if (actor.name === "Door" && actor.pos.x === x && actor.pos.y === y - 1 && actor.blocks === isClosed) {
-        actors.push(actor);
-      }
-      else if (actor.name === "Door" && actor.pos.x === x && actor.pos.y === y + 1 && actor.blocks === isClosed) {
-        actors.push(actor);
+      if ((actor.name === "Door" || actor.name === "Secret Door")) {
+        if (actor.pos.x === x - 1 && actor.pos.y === y && actor.blocks === isClosed) {
+          actors.push(actor);
+        }
+        else if (actor.pos.x === x + 1 && actor.pos.y === y && actor.blocks === isClosed) {
+          actors.push(actor);
+        }
+        else if (actor.pos.x === x && actor.pos.y === y - 1 && actor.blocks === isClosed) {
+          actors.push(actor);
+        }
+        else if (actor.pos.x === x && actor.pos.y === y + 1 && actor.blocks === isClosed) {
+          actors.push(actor);
+        }
       }
 
     }
@@ -278,7 +280,7 @@ export class Game {
     for (let i = 0; i < this.actors.length; i++) {
       const actor = this.actors[i];
       const distance = actor.getDistance(pos);
-      if (distance < bestDistance && (distance <= range || range === 0) && actor !== this.player) {
+      if (distance < bestDistance && (distance <= range || range === 0) && actor !== this.player && actor.ai && actor.destructible && actor.destructible.HP > 0) {
         bestDistance = distance;
         closest = actor;
       }
@@ -331,7 +333,7 @@ export class Game {
         if (this.gamestatus !== GameStatus.DEFEAT)
           this.gamestatus = GameStatus.IDLE;
 
-        
+
         await ensure(this.player).update();
         this.camera?.update(ensure(this.player));
 
@@ -384,7 +386,11 @@ export class Game {
       character = 'D';
       blockFov = false;
       blocks = true;
-
+    } else if (name === "Secret Door") {
+      color = "#999";
+      character = '#';
+      blockFov = false;
+      blocks = true;
     }
 
     this.addUnit(name, x, y, character, color);
@@ -396,6 +402,16 @@ export class Game {
       item.pickable = pickableType;
     console.log(`Item ${item.name} added`);
     this.sendToBack(item);
+  }
+
+  async pressSpaceToContinue() {
+    this.log?.addToLog("Paina SPACE jatkaaksesi.", "#FFF");
+    await this.render();
+    while (1) {
+      const ch = await this.getch();
+      if (ch === ' ')
+        break;
+    }
   }
 
   addAI(name: string, x: number, y: number) {

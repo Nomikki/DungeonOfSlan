@@ -46,8 +46,7 @@ export default class Actor {
   }
 
   async computeFov() {
-    if (this.fov)
-    {
+    if (this.fov) {
       this.fov.calculate(this, 10);
     }
   }
@@ -61,11 +60,16 @@ export default class Actor {
 
   Render() {
     const fov = game.player?.fov && game.player.fov.isInFov(this.pos);
-    if (fov === 2 || (fov != 0 && this.blockFov == true))
-    {
+    if (fov === 2 || (fov != 0 && this.blockFov == true)) {
       const px = this.pos.x - ensure(game.camera).x;
       const py = this.pos.y - ensure(game.camera).y;
       game.drawChar(this.ch, px, py, this.color);
+    } else {
+      if (fov === 1 && this.name === "Secret Door" && this.blocks) {
+        const px = this.pos.x - ensure(game.camera).x;
+        const py = this.pos.y - ensure(game.camera).y;
+        game.drawChar("*", px, py, this.color);
+      }
     }
   }
 }
