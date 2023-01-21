@@ -62,6 +62,12 @@ export class Game {
     this.log = new Log(10);
     this.camera = new Camera();
     this.gamestatus = GameStatus.STARTUP;
+
+    const ver = ensure(document.querySelector("#version"));
+    const versionText = `Commit ID: ${COMMIT_HASH} | Version: ${VERSION}`;
+    ver.innerHTML = versionText;
+
+
   }
 
   clear(color: Color): void {
@@ -83,16 +89,6 @@ export class Game {
     this.ctx.putImageData(id, 0, 0);
   }
 
-  renderVersion() {
-    const versionText = `Commit ID: ${COMMIT_HASH} | Version: ${VERSION}`;
-
-    this.drawText(
-      `${versionText}`,
-      80 - versionText.length,
-      this.ctx.canvas.height / this.fontSize - 2,
-      "#808080",
-    );
-  }
 
   drawChar(ch: string, x: number, y: number, color = "#BBB") {
     if (x < 0 || y < 0 || (x + 1) * this.fontSize >= this.width || (y + 1) * this.fontSize >= this.height) {
@@ -192,8 +188,6 @@ export class Game {
     this.drawText(`Syvyys: ${this.depth}`, float2int(this.width / this.fontSize) - 10, 0, "#FFF");
     this.drawText(`HP: ${this.player?.destructible?.HP} / ${this.player?.destructible?.maxHP}`, 1, 0, "#FFF");
     this.drawText(`AC: ${this.player?.destructible?.defense}`, 1, 1, "#FFF");
-
-    this.renderVersion();
   }
 
   async render() {
@@ -231,6 +225,17 @@ export class Game {
     return actors;
   }
 
+
+  getActorFromXY(pos: vec2)
+  {
+    for (let i = 0; i < this.actors.length; i++) {
+      const actor = this.actors[i];
+      if (actor.pos.x === pos.x && actor.pos.y === pos.y) {
+        return actor;
+      }
+    }
+    return undefined;
+  }
 
   getClosestEnemy(pos: vec2, range: number) {
     let closest: Actor | undefined;
@@ -386,7 +391,9 @@ export class Game {
     }
 
 
-    const monster = createMonster("rat", x, y);
+
+
+    const monster = createMonster(name, x, y);
     if (monster) {
       this.actors.push(monster);
     }
@@ -506,7 +513,7 @@ export class Game {
       if (float2int(room.GetCenterX()) === this.level?.startPosition.x && float2int(room.GetCenterY()) === this.level.startPosition.y) {
         continue;
       }
-      const wh = Math.min(5, random.getInt(0, float2int(Math.sqrt(Math.max(0, (room.w - 5) * (room.h - 5))))));
+      const wh = Math.min(5, random.getInt(0, float2int(Math.sqrt(Math.max(0, (room.w - 4) * (room.h - 4))))));
 
       //console.log(wh);
       for (let a = 0; a < wh; a++) {
@@ -514,18 +521,21 @@ export class Game {
         let dx = 0;
         let dy = 0;
 
-        while (1) {
-          dx = random.getInt(room?.x + 2, (room.x + room.w - 2));
-          dy = random.getInt(room?.y + 2, (room.y + room.h - 3));
-          if (this.canWalk(new vec2(dx, dy))) {
-            break;
-          }
+        const r = random.getInt(1, 3);
 
-        }
-        if (random.getInt(0, 100) > 90) {
-          this.addAI("Rotta", dx, dy);
-          //this.addAI("Orc", dx, dy);
-          amountOfMonsters++;
+        for (let b = 0; b < r; b++) {
+          while (1) {
+            dx = random.getInt(room?.x + 2, (room.x + room.w - 2));
+            dy = random.getInt(room?.y + 2, (room.y + room.h - 3));
+            if (this.canWalk(new vec2(dx, dy))) {
+              break;
+            }
+
+          }
+          if (random.getInt(0, 100) > 90) {
+            this.addAI("rat", dx, dy);
+            amountOfMonsters++;
+          }
         }
       }
     }

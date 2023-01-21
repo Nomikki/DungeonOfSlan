@@ -12,9 +12,14 @@ vihut droppaa itemeitä
 range-attack (jousiase esim)
 
 uusi damage/target/spell/buff-malli
-
+- paikkojen kuvailu
 
 
 Taistelumekaniikka:
 Heitetään 1d20-noppaa johon laitetaan acc-bonus päälle ja lukua verrataan kohteen defense-lukuun.
 Jos kohteen defense luku on alle hyökkääjän luvun, osuma onnistuu, jonka jälkeen kokeillaan paljonko tulee vahinkoa.
+
+
+
+Muistettavaa:
+rottalauma voi jo aiheuttaa pieniä ongelmia alhaisilla tasoilla, esim 3. rottaa voi jo tappaa.

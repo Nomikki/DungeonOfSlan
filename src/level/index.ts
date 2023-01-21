@@ -300,7 +300,7 @@ export default class Level {
     this.setupPathStart(sx, sy);
 
     const distance = this.harvestMap(sx, sy, ex, ey, maxLen);
-    console.log(distance);
+    //console.log(distance);
     if (distance === 0)
       return;
 
@@ -353,7 +353,7 @@ export default class Level {
 
     }
 
-    console.log("failed: " + this.failedCorridos.length);
+    //console.log("failed: " + this.failedCorridos.length);
   }
 
   async makeCorridors() {
@@ -403,7 +403,7 @@ export default class Level {
 
   setupDoors() {
 
-    console.log("nodes: " + this.nodeTemp.length);
+    //console.log("nodes: " + this.nodeTemp.length);
     let currentTileType = 0;
     for (let i = 1; i < this.nodeTemp.length; i++) {
       const oldTileType = currentTileType;
@@ -485,7 +485,7 @@ export default class Level {
 
 
     const iterAmount = 3; //random.getInt(1, 6);
-    console.log("cavern iters: ", iterAmount);
+    //console.log("cavern iters: ", iterAmount);
     for (let l = 0; l < iterAmount; l++) {
       for (let y = 1; y < this.height - 1; y++) {
         for (let x = 1; x < this.width - 1; x++) {

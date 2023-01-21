@@ -18,5 +18,8 @@ body {
 
 #screen {
   image-rendering: pixelated;
-  
+}
+
+#version {
+  color: ui("info");
 }

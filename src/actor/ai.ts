@@ -5,6 +5,7 @@ import Actor from ".";
 import { Color, game, GameStatus } from "..";
 
 export default class Ai {
+  latestInterestingPoint = new vec2(0, 0);
 
   async update(owner: Actor) {
     console.log("raw ai.", owner);
@@ -217,12 +218,33 @@ export class PlayerAI extends Ai {
 
 
 export class MonsterAi extends Ai {
+
+  async canSee(owner: Actor, p: vec2) {
+    const d = float2int(owner.getDistance(p));
+    const dx = (owner.pos.x - p.x) / d;
+    const dy = (owner.pos.y - p.y) / d;
+    let x = p.x;
+    let y = p.y;
+
+    for (let i = 0; i < d; i++) {
+      x += dx;
+      y += dy;
+      if (game.isWall(new vec2(float2int(x), float2int(y))))
+        return false;
+    }
+    return true;
+  }
+
+
   async update(owner: Actor) {
     //if destructible and alive
     if (owner.destructible && owner.destructible.isDead())
       return;
 
-    await this.moveOrAttack(owner, ensure(game.player).pos);
+    if (await this.canSee(owner, ensure(game.player).pos))
+      this.latestInterestingPoint = ensure(game.player).pos;
+
+    await this.moveOrAttack(owner, this.latestInterestingPoint);
   }
 
   async moveOrAttack(owner: Actor, target: vec2) {
@@ -233,6 +255,7 @@ export class MonsterAi extends Ai {
 
     const distance = float2int(Math.sqrt(dx * dx + dy * dy));
     if (distance >= 2) {
+
       dx = float2int(Math.round(dx / distance));
       dy = float2int(Math.round(dy / distance));
 
@@ -249,8 +272,12 @@ export class MonsterAi extends Ai {
         owner.pos.y += stepdy;
       }
     } else {
-      console.log(owner);
-      await ensure(owner.attacks)[owner.selectedAttack].attack(owner, ensure(game.player));
+      //melee attack
+
+      const targetActor = game.getActorFromXY(target);
+      if (targetActor) {
+        await ensure(owner.attacks)[owner.selectedAttack].attack(owner, ensure(targetActor));
+      }
     }
 
   }

@@ -1,4 +1,4 @@
-import { ensure } from ".";
+import { capitalize, ensure } from ".";
 import { game } from "..";
 
 export class LogText {
@@ -36,6 +36,8 @@ export class Log {
   }
 
   addToLog(text: string, color: string) {
+    text = capitalize(text);
+
     if (this.texts.length > 0 && text === this.texts[this.texts.length - 1].text) {
       this.texts[this.texts.length - 1].amount++;
       this.updateDecay();
