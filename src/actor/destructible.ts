@@ -2,17 +2,36 @@ import { float2int } from "@/utils";
 import Actor from ".";
 import { game, GameStatus } from "..";
 
+export class Abilities {
+  str = 0;
+  dex = 0;
+  int = 0;
+  wis = 0;
+  con = 0;
+
+  constructor() {
+    this.str = 0;
+    this.dex = 0;
+    this.int = 0;
+    this.wis = 0;
+    this.con = 0;
+  }
+}
+
 export class Destructible {
   maxHP: number;
   HP: number;
   defense: number;
   corpseName: string;
 
+  abilities: Abilities;
+
   constructor(maxHP: number, defense: number, corpseName: string) {
     this.maxHP = maxHP;
     this.HP = maxHP;
     this.defense = defense;
     this.corpseName = corpseName;
+    this.abilities = new Abilities();
   }
 
   isDead(): boolean {

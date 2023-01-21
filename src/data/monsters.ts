@@ -6,7 +6,7 @@ export default [
     movingSpeed: 1,
 
     ch: "k",
-    color: "#A0A000",
+    color: "#C07000",
     hp: 5,
     ac: 12,
     xp: 25,

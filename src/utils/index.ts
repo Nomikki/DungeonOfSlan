@@ -24,3 +24,8 @@ export const capitalize = (text: string): string => {
 export const abilityBonus = (ability: number): number => {
   return Math.floor((ability - 10) / 2);
 };
+
+
+export const sign = (s: number) => {
+  return s >= 0 ? '+' : '';
+};

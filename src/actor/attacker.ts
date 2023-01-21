@@ -1,33 +1,42 @@
 import { random } from "@/level";
-import { abilityBonus } from "@/utils";
+import { abilityBonus, ensure, sign } from "@/utils";
 import Actor from ".";
 import { game } from "..";
 
 export class Attacker {
   power: string;
-  accuracy: number;
+  abilityType: string;
 
 
-  constructor(power: string, accuracy: number) {
+  constructor(power: string, abilityType: string) {
     this.power = power;
-    this.accuracy = accuracy;
+    this.abilityType = abilityType;
+  }
+
+  async getAbilityValueFrom(owner: Actor, abilityType: string): Promise<number> {
+    console.log("ability type: " + abilityType);
+    if (abilityType === "dex") return ensure(owner.destructible).abilities.dex;
+    if (abilityType === "con") return ensure(owner.destructible).abilities.con;
+    if (abilityType === "str") return ensure(owner.destructible).abilities.str;
+    if (abilityType === "int") return ensure(owner.destructible).abilities.int;
+    if (abilityType === "wis") return ensure(owner.destructible).abilities.wis;
+    return 0;
   }
 
   async attack(owner: Actor, target: Actor) {
     if (target.destructible && !target.destructible.isDead()) {
       const [dices, eyes] = random.parseDice(this.power);
       const accuracyDice = random.dice(1, 20);
-      const accBonus = abilityBonus(this.accuracy);
+
+      const accBonus = abilityBonus(await this.getAbilityValueFrom(owner, this.abilityType));
+      console.log(accBonus);
+
       const currentAccuracy = accuracyDice + accBonus;
       const critical = accuracyDice === 20 ? true : false;
 
-      const currentPower = !critical ? random.dice(dices, eyes) : (eyes * dices);
+      const currentPower = !critical ? (random.dice(dices, eyes) + accBonus) : (eyes * dices) + accBonus;
       let logText = "";
       let battleLog = "";
-
-      const sign = (s: number) => {
-        return s >= 0 ? '+' : '';
-      };
 
       if (critical) {
         game.log?.addToLog(`CRITICAL!`, "#00FF40");
@@ -39,13 +48,13 @@ export class Attacker {
       if (ishitting) {
         logText = `${owner.name} hyökkää. ${target.name} ottaa ${currentPower} vahinkoa`;
         if (critical) {
-          battleLog = `CRITICAL: (${this.power}: ${currentPower})`;
+          battleLog = `CRITICAL: (${this.power}${sign(accBonus)}${accBonus}: ${currentPower})`;
         } else {
-          battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.destructible.defense}) (${this.power}: ${currentPower})`;
+          battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.destructible.defense}) (${this.power}${sign(accBonus)}${accBonus}: ${currentPower})`;
         }
       } else {
         logText = `${owner.name} hyökkää, mutta ${target.name} väistää iskun.`
-        battleLog = `(1d20${sign(accBonus)}: ${currentAccuracy} vs ${target.destructible.defense})`;
+        battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.destructible.defense})`;
       }
 
       game.log?.addToLog(logText, "#FFF");

@@ -3,12 +3,12 @@ import Actor from "./actor";
 import { PlayerAI } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
 import { Container } from "./actor/container";
-import { PlayerDestructible } from "./actor/destructible";
+import { Abilities, PlayerDestructible } from "./actor/destructible";
 import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
 import Level, { random } from "./level";
 import { createMonster } from "./monsterGenerator";
-import { ensure, float2int, rgbToHex } from "./utils";
+import { abilityBonus, ensure, float2int, rgbToHex, sign } from "./utils";
 import { Camera } from "./utils/camera";
 import { Log } from "./utils/log";
 import vec2 from "./utils/vec2";
@@ -188,6 +188,30 @@ export class Game {
     this.drawText(`Syvyys: ${this.depth}`, float2int(this.width / this.fontSize) - 10, 0, "#FFF");
     this.drawText(`HP: ${this.player?.destructible?.HP} / ${this.player?.destructible?.maxHP}`, 1, 0, "#FFF");
     this.drawText(`AC: ${this.player?.destructible?.defense}`, 1, 1, "#FFF");
+
+
+    const abis = ensure(this.player?.destructible).abilities;
+    const abiModifiers = new Abilities();
+    ensure(abiModifiers).con = abilityBonus(ensure(abis).con);
+    ensure(abiModifiers).str = abilityBonus(ensure(abis).str);
+    ensure(abiModifiers).dex = abilityBonus(ensure(abis).dex);
+    ensure(abiModifiers).int = abilityBonus(ensure(abis).int);
+    ensure(abiModifiers).wis = abilityBonus(ensure(abis).wis);
+
+
+    this.drawText(`CON: ${abis?.con}`, 16, 0, "#FFF");
+    this.drawText(`STR: ${abis?.str}`, 26, 0, "#FFF");
+    this.drawText(`DEX: ${abis?.dex}`, 36, 0, "#FFF");
+    this.drawText(`WIS: ${abis?.wis}`, 46, 0, "#FFF");
+    this.drawText(`INT: ${abis?.int}`, 56, 0, "#FFF");
+
+    this.drawText(`${sign(abiModifiers.con)}${abiModifiers?.con}`, 16+5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.str)}${abiModifiers?.str}`, 26+5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.dex)}${abiModifiers?.dex}`, 36+5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.wis)}${abiModifiers?.wis}`, 46+5, 1, "#FFF");
+    this.drawText(`${sign(abiModifiers.int)}${abiModifiers?.int}`, 56+5, 1, "#FFF");
+
+
   }
 
   async render() {
@@ -226,8 +250,7 @@ export class Game {
   }
 
 
-  getActorFromXY(pos: vec2)
-  {
+  getActorFromXY(pos: vec2) {
     for (let i = 0; i < this.actors.length; i++) {
       const actor = this.actors[i];
       if (actor.pos.x === pos.x && actor.pos.y === pos.y) {
@@ -369,7 +392,7 @@ export class Game {
     let defense = 2;
     const corpseName = "carcass of " + name;
     let attackPower = "1d4";
-    let accuracy = 1;
+    
 
     if (name === "Hero") {
       color = "#FFF";
@@ -377,11 +400,18 @@ export class Game {
       hp = 15;
       defense = 10;
       attackPower = "1d4";
-      accuracy = 10;
+      
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
       this.player.destructible = new PlayerDestructible(hp, defense, corpseName);
-      this.player.attacks?.push(new Attacker(attackPower, accuracy));
+      
+      this.player.destructible.abilities.con = 10;
+      this.player.destructible.abilities.dex = 12;
+      this.player.destructible.abilities.str = 18;
+      this.player.destructible.abilities.int = 10;
+      this.player.destructible.abilities.wis = 10;
+
+      this.player.attacks?.push(new Attacker(attackPower, "str"));
       ensure(this.player).ai = new PlayerAI();
       this.player.container = new Container(26);
       this.player.fov = new FieldOfView(ensure(this.level).width, ensure(this.level).height);
@@ -406,7 +436,7 @@ export class Game {
   }
 
   async nextLevel() {
-    this.log?.addToLog("Menit yhden tason alemmas.", "#999");
+    this.log?.addToLog("Menit yhden tason syvemmälle.", "#999");
 
     this.level = undefined;
     const tempPlayer = this.player as Actor;
@@ -507,6 +537,8 @@ export class Game {
   fillWithNPCs() {
     let amountOfMonsters = 0;
     let amountOfRooms = 0;
+    const monsterArray = ["rat", "kobold"];
+
     for (let i = 0; i < ensure(this.level?.root).rooms.length; i++) {
       const room = ensure(this.level?.root?.rooms[i]);
       amountOfRooms++;
@@ -521,7 +553,8 @@ export class Game {
         let dx = 0;
         let dy = 0;
 
-        const r = random.getInt(1, 3);
+        const r = random.getInt(1, 5);
+        const monster = monsterArray[random.getInt(0, monsterArray.length)];
 
         for (let b = 0; b < r; b++) {
           while (1) {
@@ -530,10 +563,10 @@ export class Game {
             if (this.canWalk(new vec2(dx, dy))) {
               break;
             }
-
           }
+
           if (random.getInt(0, 100) > 90) {
-            this.addAI("rat", dx, dy);
+            this.addAI(monster, dx, dy);
             amountOfMonsters++;
           }
         }
