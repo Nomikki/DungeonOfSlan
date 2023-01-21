@@ -20,3 +20,7 @@ export const float2int = (value: number): number => {
 export const capitalize = (text: string): string => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+export const abilityBonus = (ability: number): number => {
+  return Math.floor((ability - 10) / 2);
+};

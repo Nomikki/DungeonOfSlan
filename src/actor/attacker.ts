@@ -1,4 +1,5 @@
 import { random } from "@/level";
+import { abilityBonus } from "@/utils";
 import Actor from ".";
 import { game } from "..";
 
@@ -15,16 +16,41 @@ export class Attacker {
   async attack(owner: Actor, target: Actor) {
     if (target.destructible && !target.destructible.isDead()) {
       const [dices, eyes] = random.parseDice(this.power);
-      const currentPower = random.dice(dices, eyes);
-      const currentAccuracy = random.dice(1, 20, this.accuracy);
+      const accuracyDice = random.dice(1, 20);
+      const accBonus = abilityBonus(this.accuracy);
+      const currentAccuracy = accuracyDice + accBonus;
+      const critical = accuracyDice === 20 ? true : false;
 
-      game.log?.addToLog(`acc: ${currentAccuracy}`, "#FFF");
-      if (currentAccuracy >= target.destructible.defense) {
-        game.log?.addToLog(`${owner.name} hyökkää. ${target.name} ottaa ${currentPower} vahinkoa`, "#FFF");
-      } else {
-        game.log?.addToLog(`${owner.name} hyökkää, mutta ${target.name} väistää iskun.`, "#AAA");
+      const currentPower = !critical ? random.dice(dices, eyes) : (eyes * dices);
+      let logText = "";
+      let battleLog = "";
+
+      const sign = (s: number) => {
+        return s >= 0 ? '+' : '';
+      };
+
+      if (critical) {
+        game.log?.addToLog(`CRITICAL!`, "#00FF40");
       }
-      target.destructible.TakeDamage(target, currentPower);
+      //
+
+      const ishitting = (currentAccuracy >= target.destructible.defense || critical) ? true : false;
+
+      if (ishitting) {
+        logText = `${owner.name} hyökkää. ${target.name} ottaa ${currentPower} vahinkoa`;
+        if (critical) {
+          battleLog = `CRITICAL: (${this.power}: ${currentPower})`;
+        } else {
+          battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.destructible.defense}) (${this.power}: ${currentPower})`;
+        }
+      } else {
+        logText = `${owner.name} hyökkää, mutta ${target.name} väistää iskun.`
+        battleLog = `(1d20${sign(accBonus)}: ${currentAccuracy} vs ${target.destructible.defense})`;
+      }
+
+      game.log?.addToLog(logText, "#FFF");
+      game.log?.addToLog(battleLog, "#AAA");
+      target.destructible.TakeDamage(target, ishitting ? currentPower : 0);
     }
   }
 }
