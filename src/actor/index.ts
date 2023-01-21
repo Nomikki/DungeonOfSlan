@@ -60,8 +60,8 @@ export default class Actor {
   }
 
   Render() {
-    //const fov = game.player?.fov && game.player.fov.isInFov(this.pos);
-    //if (fov === 2 || (fov != 0 && this.blockFov == true))
+    const fov = game.player?.fov && game.player.fov.isInFov(this.pos);
+    if (fov === 2 || (fov != 0 && this.blockFov == true))
     {
       const px = this.pos.x - ensure(game.camera).x;
       const py = this.pos.y - ensure(game.camera).y;
