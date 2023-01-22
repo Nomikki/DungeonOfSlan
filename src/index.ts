@@ -606,13 +606,13 @@ export class Game {
   }
 
   fillWithNPCs() {
-    let amountOfMonsters = 0;
-    let amountOfRooms = 0;
+    //let amountOfMonsters = 0;
+    //let amountOfRooms = 0;
     const monsterArray = ["rat", "kobold"];
 
     for (let i = 0; i < ensure(this.level?.root).rooms.length; i++) {
       const room = ensure(this.level?.root?.rooms[i]);
-      amountOfRooms++;
+      //amountOfRooms++;
       if (float2int(room.GetCenterX()) === this.level?.startPosition.x && float2int(room.GetCenterY()) === this.level.startPosition.y) {
         continue;
       }
@@ -638,24 +638,18 @@ export class Game {
 
           if (random.getInt(0, 100) > 90) {
             this.addAI(monster, dx, dy);
-            amountOfMonsters++;
+            //amountOfMonsters++;
           }
         }
       }
     }
 
-    const monsterRatio = amountOfMonsters / amountOfRooms;
-    if (monsterRatio >= 0.7)
-      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa todella vaaralliselta.`, "#FFFFFF");
-    else if (monsterRatio >= 0.5)
-      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa melkoisen pahaenteiseltä.`, "#FFFFFF");
-    else if (monsterRatio >= 0.25)
-      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa melkoisen asumattomalta.`, "#FFFFFF");
-    else
-      this.log?.addToLog(`${this.level?.dungeonName} vaikuttaa hiljaiselta.`, "#FFFFFF");
+    //const monsterRatio = amountOfMonsters / amountOfRooms;
+
+    this.log?.addToLog(`${this.level?.dungeonName} on synkkä paikka. Sinut on heitetty sen syövereihin löytääkseksi Pyhän Kiljusammion, joka on avain vapauteen.`, "#FFFFFF");
 
 
-    console.log(amountOfMonsters / amountOfRooms, amountOfMonsters, amountOfRooms);
+    //console.log(amountOfMonsters / amountOfRooms, amountOfMonsters, amountOfRooms);
   }
 
   async load() {

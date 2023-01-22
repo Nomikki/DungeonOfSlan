@@ -43,8 +43,27 @@ export class Log {
       this.updateDecay();
       return;
     }
-    const log = new LogText(text, color);
-    this.texts.push(log);
+
+    const wordWrapSize = 40;
+
+    let splittingPos = 0;
+    for (let i = 0; i < Math.min(wordWrapSize, text.length); i++)
+    {
+      if (text.charAt(i) === ' ')
+        splittingPos = i;
+    }
+
+    if (text.length > wordWrapSize)
+    {
+      const log = new LogText(text.substring(0, splittingPos), color);
+      this.texts.push(log);
+
+      this.addToLog(text.substring(splittingPos+1, text.length), color);
+    } else {
+      const log = new LogText(text, color);
+      this.texts.push(log);
+    }
+    
 
     this.updateDecay();
   }
