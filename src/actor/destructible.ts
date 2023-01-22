@@ -21,16 +21,14 @@ export class Abilities {
 export class Destructible {
   maxHP: number;
   HP: number;
-  defense: number;
   corpseName: string;
 
   abilities: Abilities;
   xp: number;
 
-  constructor(maxHP: number, defense: number, corpseName: string) {
+  constructor(maxHP: number, corpseName: string) {
     this.maxHP = maxHP;
     this.HP = maxHP;
-    this.defense = defense;
     this.corpseName = corpseName;
     this.abilities = new Abilities();
     this.xp = 0;
@@ -85,8 +83,8 @@ export class Destructible {
 }
 
 export class MonsterDestructible extends Destructible {
-  constructor(maxHP: number, defense: number, corpseName: string) {
-    super(maxHP, defense, corpseName);
+  constructor(maxHP: number, corpseName: string) {
+    super(maxHP, corpseName);
   }
 
   Die(owner: Actor) {
@@ -96,8 +94,8 @@ export class MonsterDestructible extends Destructible {
 }
 
 export class PlayerDestructible extends Destructible {
-  constructor(maxHP: number, defense: number, corpseName: string) {
-    super(maxHP, defense, corpseName);
+  constructor(maxHP: number, corpseName: string) {
+    super(maxHP, corpseName);
   }
 
   Die(owner: Actor) {
@@ -109,8 +107,8 @@ export class PlayerDestructible extends Destructible {
 
 
 export class ItemDestructible extends Destructible {
-  constructor(maxHP: number, defense: number, corpseName: string) {
-    super(maxHP, defense, corpseName);
+  constructor(maxHP: number, corpseName: string) {
+    super(maxHP, corpseName);
   }
 
   Die(owner: Actor) {

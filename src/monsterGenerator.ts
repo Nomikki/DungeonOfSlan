@@ -54,12 +54,13 @@ export const createMonster = (name: string, x: number, y: number): Actor | undef
     const monster = new Actor(monsterTemplate.name, monsterTemplate.ch, monsterTemplate.color);
     monster.pos.x = x;
     monster.pos.y = y;
+    monster.ac = monsterTemplate.ac;
 
     monster.ai = new MonsterAi();
     for (let i = 0; i < monsterTemplate.attacks.length; i++) {
       monster.attacks.push(new Attacker(monsterTemplate.attacks[i].damage, monsterTemplate.attacks[i].abilityBonus));
     }
-    monster.destructible = new Destructible(monsterTemplate.hp, monsterTemplate.ac, "carcass of " + name);
+    monster.destructible = new Destructible(monsterTemplate.hp, "carcass of " + name);
     monster.destructible.abilities = monsterTemplate.abilities;
     monster.container = new Container(26);
     monster.equipments = new Equipment();

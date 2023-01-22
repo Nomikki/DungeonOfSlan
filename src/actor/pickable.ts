@@ -4,6 +4,7 @@ import { Equips } from "./equipment";
 
 export class Pickable {
   equipslot: Equips = Equips.None;
+  canUse = true;
 
   pick(owner: Actor, wearer: Actor): boolean {
     if (wearer.container && wearer.container.add(owner)) {
@@ -15,7 +16,7 @@ export class Pickable {
   }
 
   use(owner: Actor, wearer: Actor): boolean {
-    if (wearer.container) {
+    if (wearer.container && this.canUse) {
       wearer.container.remove(owner);
       return true;
     }

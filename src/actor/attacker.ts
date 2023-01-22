@@ -43,18 +43,18 @@ export class Attacker {
       }
       //
 
-      const ishitting = (currentAccuracy >= target.destructible.defense || critical) ? true : false;
+      const ishitting = (currentAccuracy >= target.ac || critical) ? true : false;
 
       if (ishitting) {
         logText = `${owner.name} hyökkää. ${target.name} ottaa ${currentPower} vahinkoa`;
         if (critical) {
           battleLog = `CRITICAL: (${this.power}${sign(accBonus)}${accBonus}: ${currentPower})`;
         } else {
-          battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.destructible.defense}) (${this.power}${sign(accBonus)}${accBonus}: ${currentPower})`;
+          battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.ac}) (${this.power}${sign(accBonus)}${accBonus}: ${currentPower})`;
         }
       } else {
         logText = `${owner.name} hyökkää, mutta ${target.name} väistää iskun.`
-        battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.destructible.defense})`;
+        battleLog = `(1d20${sign(accBonus)}${accBonus}: ${currentAccuracy} vs ${target.ac})`;
       }
 
       game.log?.addToLog(logText, "#FFF");

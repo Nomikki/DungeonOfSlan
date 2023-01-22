@@ -1,4 +1,4 @@
-import { ensure } from "@/utils";
+import { abilityBonus, ensure } from "@/utils";
 import Actor from ".";
 
 export enum Equips {
@@ -51,6 +51,24 @@ export class Equipment {
       }
     }
     return undefined;
+  }
+
+  calculateAC(owner: Actor): number {
+    let amount = 0;
+    for (let i = 0; i < this.equipments.length; i++) {
+      if (this.equipments[i]) {
+
+        let abiBonus = 0;
+
+        if (ensure(this.equipments[i]).ac_bonus === "dex") abiBonus = ensure(owner.destructible)?.abilities.dex;
+        abiBonus = abilityBonus(abiBonus);
+
+        amount += ensure(this.equipments[i])?.ac + abiBonus;
+      }
+    }
+    if (amount === 0) amount = 10;
+
+    return amount;
   }
 
 }

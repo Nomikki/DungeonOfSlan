@@ -121,7 +121,7 @@ export class PlayerAI extends Ai {
     const ch = await game.getch();
     const actorIndex = ch.charCodeAt(0) - 97; // 97 = a
     if (actorIndex >= 0 && actorIndex < ensure(owner.equipments).equipments.length) {
-      return ensure(owner.equipments).equipments[actorIndex];
+      return ensure(owner.equipments).equipments[actorIndex+1];
     }
     return undefined;
   }
@@ -132,13 +132,17 @@ export class PlayerAI extends Ai {
 
     const wearItem = async () => {
       const actor = await this.chooseFromInventory(owner, "wear");
-      if (actor) {
+      if (actor && actor.pickable?.equipslot !== Equips.None) {
         if (owner.equipments?.equip(owner, actor, ensure(actor.pickable)?.equipslot)) {
           game.log?.addToLog(`Puet esineen ${actor.name}`, "#999");
         } else {
           game.log?.addToLog(`Esineen ${actor.name} pukeminen epäonnistui. Riisu ensin vanha varuste pois.`, "#F55");
         }
+      } else {
+        game.log?.addToLog(`Esineen pukeminen epäonnistui. Tätä ei voi pukea.`, "#F55");
       }
+      
+      owner.ac = ensure(owner.equipments)?.calculateAC(owner);
       game.gamestatus = GameStatus.NEW_TURN;
     };
 
@@ -150,14 +154,20 @@ export class PlayerAI extends Ai {
           owner.container?.add(actor);
         }
       }
+
+      owner.ac = ensure(owner.equipments)?.calculateAC(owner);
       game.gamestatus = GameStatus.NEW_TURN;
     };
 
     const useItem = async () => {
       const actor = await this.chooseFromInventory(owner, "use");
       if (actor) {
-        game.log?.addToLog(`Käytit esineen ${actor.name}`, "#999");
-        ensure(actor.pickable).use(actor, owner);
+        
+        if (ensure(actor.pickable).use(actor, owner)) {
+          game.log?.addToLog(`Käytit esineen ${actor.name}`, "#999");
+        } else {
+          game.log?.addToLog(`Esineen käyttö epäonnistui.`, "#F55");
+        }
       }
       game.gamestatus = GameStatus.NEW_TURN;
     };

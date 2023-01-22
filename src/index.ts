@@ -11,6 +11,7 @@ import Level, { random } from "./level";
 import { createMonster } from "./monsterGenerator";
 import { abilityBonus, ensure, float2int, rgbToHex, sign } from "./utils";
 import { Camera } from "./utils/camera";
+import { createItem } from "./utils/itemgenerator";
 import { Log } from "./utils/log";
 import vec2 from "./utils/vec2";
 
@@ -231,7 +232,7 @@ export class Game {
     this.drawText(`XP: ${this.player?.destructible?.xp}`, float2int(this.width / this.fontSize) - 10, 1, "#FFF");
 
     this.drawText(`HP: ${this.player?.destructible?.HP} / ${this.player?.destructible?.maxHP}`, 1, 0, "#FFF");
-    this.drawText(`AC: ${this.player?.destructible?.defense}`, 1, 1, "#FFF");
+    this.drawText(`AC: ${this.player?.ac}`, 1, 1, "#FFF");
     this.drawText(`WPN: ${this.player?.attacks[this.player.selectedAttack].power}`, 1, 2, "#FFF");
 
 
@@ -418,6 +419,14 @@ export class Game {
     let blocks = false;
     let equipslot = Equips.None;
 
+    if (name === "Pyhä Kiljusammio") {
+      color = "#FF00FF";
+      character = 'O';
+      pickableType = new Healer(100);
+      blocks = false;
+      blockFov = true;
+    }
+
     if (name === "Healing potion") {
       color = "#FF00FF";
       character = '!';
@@ -486,13 +495,10 @@ export class Game {
 
       this.addUnit(name, x, y, character, color);
       this.player = this.actors[this.actors.length - 1];
-      this.player.destructible = new PlayerDestructible(hp, defense, corpseName);
+      this.player.ac = defense;
+      this.player.destructible = new PlayerDestructible(hp, corpseName);
 
-      this.player.destructible.abilities.con = 10;
-      this.player.destructible.abilities.dex = 12;
-      this.player.destructible.abilities.str = 18;
-      this.player.destructible.abilities.int = 10;
-      this.player.destructible.abilities.wis = 10;
+      this.player.destructible.abilities = { con: 10, dex: 12, str: 12, int: 10, wis: 10 };
 
       this.player.attacks?.push(new Attacker(attackPower, "str"));
       ensure(this.player).ai = new PlayerAI();
@@ -501,6 +507,9 @@ export class Game {
       this.player.fov = new FieldOfView(ensure(this.level).width, ensure(this.level).height);
 
       this.player.pos = ensure(this.level).startPosition;
+
+
+
       return;
     }
 
@@ -562,6 +571,22 @@ export class Game {
 
     this.addItem("Stairs", ensure(this.level).stairs.x, ensure(this.level).stairs.y);
 
+
+
+    //give some items to hero
+    if (this.player) {
+      const armor = createItem("Padded light armor", this.player?.pos.x, this.player?.pos.y);
+      
+      if (armor) {
+        armor.blocks = false;
+        this.actors.push(armor);
+        this.sendToBack(armor);
+      }
+      else
+        console.log("armor not found");
+    }
+
+
   }
 
   fillWithItems() {
@@ -598,6 +623,13 @@ export class Game {
 
         }
       }
+    }
+
+    if (this.depth === 0) {
+      console.log("RUAAH!");
+      const room = ensure(this.level?.root?.rooms[0]);
+      const p = room.GetCenter();
+      this.addItem("Pyhä Kiljusammio", p.x, p.y);
     }
 
   }

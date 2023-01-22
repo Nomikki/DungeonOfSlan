@@ -14,9 +14,12 @@ export default class Actor {
   ch: string;
   color: string;
   pos: vec2;
+  ac: number;
+  ac_bonus: string;
   blocks: boolean;
   fovOnly: boolean;
   blockFov: boolean;
+  weight: number;
 
   ai?: Ai | PlayerAI | MonsterAi;
   destructible?: PlayerDestructible | MonsterDestructible | ItemDestructible;
@@ -38,7 +41,11 @@ export default class Actor {
     this.blocks = true;
     this.fovOnly = true;
     this.blockFov = false;
+    this.weight = 0;
     this.attacks = [];
+    this.ac = 10;
+    this.ac_bonus = "";
+
   }
 
   async update() {
