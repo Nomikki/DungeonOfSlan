@@ -104,8 +104,7 @@ export class PlayerAI extends Ai {
 
     const handleRest = async () => {
       game.log?.addToLog("Lepäät hetken", "#CCC");
-      if (random.dice(1, 100) === 100)
-      {
+      if (random.dice(1, 100) === 100) {
         game.player?.destructible?.Heal(1);
       }
       game.gamestatus = GameStatus.NEW_TURN;
@@ -205,8 +204,7 @@ export class PlayerAI extends Ai {
 
     if (key === "g") {
       await pickupItem();
-    }
-    else if (key === "i") {
+    } else if (key === "i") {
       await useItem();
     } else if (key === "d") {
       await dropItem();
