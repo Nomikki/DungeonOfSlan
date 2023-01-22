@@ -121,6 +121,36 @@ export class Game {
     }
   }
 
+  async drawFrames(caption: string, sx: number, sy: number, ex: number, ey: number) {
+    for (let y = sy; y < sy + ey; y++) {
+      for (let x = sx; x < sx + ex; x++) {
+        let ch = ' ';
+
+
+        if (x === sx || x === sx + ex - 1)
+          ch = '|';
+
+        if (y === sy || y === sy + ey - 1)
+          ch = '-';
+
+        if (x === sx && y === sy)
+          ch = '+';
+        if (x === ex + sx - 1 && y === sy)
+          ch = '+';
+
+        if (x === sx && y === sy + ey - 1)
+          ch = '+';
+        if (x === ex + sx - 1 && y === sy + ey - 1)
+          ch = '+';
+
+
+
+        this.drawChar(ch, x, y, "#FFF");
+      }
+    }
+    this.drawText(caption, float2int(sx + (ex / 2) - (caption.length / 2)), sy, "#FFF");
+  }
+
   /*
   drawRectangle(
     x: number,
@@ -260,6 +290,18 @@ export class Game {
 
     }
     return actors;
+  }
+
+  anyDoorsXY(pos: vec2) {
+    for (let i = 0; i < this.actors.length; i++) {
+      const actor = this.actors[i];
+      if (actor.pos.x === pos.x && actor.pos.y === pos.y) {
+        if (actor.name === "Door" || actor.name === "Secret Door") {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
 

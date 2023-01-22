@@ -404,6 +404,8 @@ export default class Level {
     return false;
   }
 
+  
+
   setupDoors() {
 
     //console.log("nodes: " + this.nodeTemp.length);
@@ -416,12 +418,13 @@ export default class Level {
       if (oldTileType !== currentTileType && currentTileType === TileTypes.corridorFloor) {
         if ((this.isRoomWall(node.x - 1, node.y) === true && this.isRoomWall(node.x + 1, node.y) === true) ||
           (this.isRoomWall(node.x, node.y - 1) === true && this.isRoomWall(node.x, node.y + 1) === true)) {
-          if (this.checkCornerWalls(node.x, node.y) === false)
+          if (this.checkCornerWalls(node.x, node.y) === false && !game.anyDoorsXY(new vec2(this.nodeTemp[i].x, this.nodeTemp[i].y))) {
             if (random.getInt(0, 100) > 20) {
               game.addItem("Door", this.nodeTemp[i].x, this.nodeTemp[i].y);
             } else {
               game.addItem("Secret Door", this.nodeTemp[i].x, this.nodeTemp[i].y);
             }
+          }
         }
       }
     }
@@ -577,22 +580,22 @@ export default class Level {
         for (let yy = y - s; yy <= y + s; yy++) {
           for (let xx = x - s; xx <= x + s; xx++) {
             if (this.isWall(xx, yy) === false) {
-              
+
               amount++;
               const v = this.getScentValue(xx, yy);
               avg += v;
-            } 
+            }
           }
         }
 
         avg /= amount;
 
-        
+
         if (avg > 255)
           avg = 255;
         if (avg < 0)
           avg = 0;
-          
+
 
         this.tiles[x + y * this.width].scentTemp = avg;
 

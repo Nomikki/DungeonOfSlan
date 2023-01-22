@@ -54,12 +54,21 @@ export class PlayerAI extends Ai {
   async chooseFromInventory(owner: Actor) {
     //let key = 0;
     game.clear(new Color(0, 0, 0));
+    const widthOfInventory = 32;
+    const amountOfitemsInInventory = ensure(owner.container)?.inventory.length;
+    ensure(game.camera).x += (widthOfInventory/2);
+    await game.render();
+    ensure(game.camera).x -= (widthOfInventory/2);
     let shortcut = 'a';
 
-    for (let i = 0; i < ensure(owner.container)?.inventory.length; i++) {
+    const leftBorder = (game.width / game.fontSize) - widthOfInventory-1;
+
+    await game.drawFrames(" INVENTORY ", leftBorder, 3, widthOfInventory, amountOfitemsInInventory + 4);
+
+    for (let i = 0; i < amountOfitemsInInventory; i++) {
       const actor = owner.container?.inventory[i];
       console.log(actor?.name);
-      game.drawText(`${shortcut}) ${actor?.name}`, 2, 2 + i, "#FFFFFF");
+      game.drawText(`${shortcut}) ${actor?.name}`, leftBorder+2, 5 + i, "#FFFFFF");
 
       shortcut = String.fromCharCode(shortcut.charCodeAt(0) + 1);
     }
@@ -124,7 +133,8 @@ export class PlayerAI extends Ai {
         } else {
           if (random.getInt(0, 10) > 7) {
             openTheDoor = true;
-            game.log?.addToLog(`Löysit salaoven!`, "#FFF"); 
+            game.log?.addToLog(`Löysit salaoven!`, "#FFF");
+            actor.name = "Door";
             await game.pressSpaceToContinue();
           }
         }
