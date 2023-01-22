@@ -227,8 +227,12 @@ export class Game {
   renderUI() {
 
     this.drawText(`Syvyys: ${this.depth}`, float2int(this.width / this.fontSize) - 10, 0, "#FFF");
+    this.drawText(`XP: ${this.player?.destructible?.xp}`, float2int(this.width / this.fontSize) - 10, 1, "#FFF");
+
     this.drawText(`HP: ${this.player?.destructible?.HP} / ${this.player?.destructible?.maxHP}`, 1, 0, "#FFF");
     this.drawText(`AC: ${this.player?.destructible?.defense}`, 1, 1, "#FFF");
+    this.drawText(`WPN: ${this.player?.attacks[this.player.selectedAttack].power}`, 1, 2, "#FFF");
+
 
 
     const abis = ensure(this.player?.destructible).abilities;
@@ -251,6 +255,8 @@ export class Game {
     this.drawText(`${sign(abiModifiers.dex)}${abiModifiers?.dex}`, 36 + 5, 1, "#FFF");
     this.drawText(`${sign(abiModifiers.wis)}${abiModifiers?.wis}`, 46 + 5, 1, "#FFF");
     this.drawText(`${sign(abiModifiers.int)}${abiModifiers?.int}`, 56 + 5, 1, "#FFF");
+
+
 
 
   }

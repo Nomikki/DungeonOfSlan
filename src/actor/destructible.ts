@@ -25,6 +25,7 @@ export class Destructible {
   corpseName: string;
 
   abilities: Abilities;
+  xp: number;
 
   constructor(maxHP: number, defense: number, corpseName: string) {
     this.maxHP = maxHP;
@@ -32,6 +33,7 @@ export class Destructible {
     this.defense = defense;
     this.corpseName = corpseName;
     this.abilities = new Abilities();
+    this.xp = 0;
   }
 
   isDead(): boolean {
