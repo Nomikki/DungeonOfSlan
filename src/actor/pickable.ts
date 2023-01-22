@@ -1,7 +1,10 @@
 import Actor from ".";
 import { game } from "..";
+import { Equips } from "./equipment";
 
 export class Pickable {
+  equipslot: Equips = Equips.None;
+
   pick(owner: Actor, wearer: Actor): boolean {
     if (wearer.container && wearer.container.add(owner)) {
       game.removeActor(owner);
@@ -29,6 +32,10 @@ export class Pickable {
       return true;
     }
     return false;
+  }
+
+  setEquipSlot(slot: Equips) {
+    this.equipslot = slot;
   }
 }
 

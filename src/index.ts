@@ -4,7 +4,7 @@ import { PlayerAI } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
 import { Container } from "./actor/container";
 import { Abilities, PlayerDestructible } from "./actor/destructible";
-import { Equipment } from "./actor/equipment";
+import { Equipment, Equips } from "./actor/equipment";
 import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
 import Level, { random } from "./level";
@@ -416,16 +416,19 @@ export class Game {
     let pickableType = undefined;
     let blockFov = false;
     let blocks = false;
+    let equipslot = Equips.None;
 
     if (name === "Healing potion") {
       color = "#FF00FF";
       character = '!';
       pickableType = new Healer(10);
+      equipslot = Equips.Body;
     }
     else if (name === "Scroll of lightning bolt") {
       color = "#FFAA00";
       character = '#';
       pickableType = new LightningBold(10, 15);
+      equipslot = Equips.Helmet;
     } else if (name === "Stairs") {
       color = "#FFFFFF";
       character = '>';
@@ -449,6 +452,8 @@ export class Game {
 
     if (pickableType)
       item.pickable = pickableType;
+
+    item.pickable?.setEquipSlot(equipslot);
     console.log(`Item ${item.name} added`);
     this.sendToBack(item);
   }
@@ -548,19 +553,7 @@ export class Game {
       `${COMMIT_HASH !== "dev" ? "/DungeonOfSlan" : ""}/?seed=${this.masterSeed}`,
     );
 
-    //this.masterSeed = 0;
-    //for (let i = 0; i < 100; i++) {
-    //this.masterSeed = i;
-    //console.log(i);
-
     await this.level?.generateMap(this.masterSeed, this.depth);
-    /*
-    console.log(`Welcome to ${this.level?.dungeonName}`);
-    }
-    */
-
-
-
 
     this.addAI("Hero", 4, 12);
     this.fillWithNPCs();

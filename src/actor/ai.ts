@@ -95,13 +95,25 @@ export class PlayerAI extends Ai {
 
     const leftBorder = (game.width / game.fontSize) - widthOfEquipments - 1;
 
-    await game.drawFrames(" = EQUIPMENTS = ", leftBorder, 3, widthOfEquipments, amountOfitemsEquipments + 4);
-    game.drawText(hint, leftBorder, amountOfitemsEquipments + 7, "#FFF");
+    await game.drawFrames(" = EQUIPMENTS = ", leftBorder, 3, widthOfEquipments, amountOfitemsEquipments + 3);
+    game.drawText(hint, leftBorder, amountOfitemsEquipments + 6, "#FFF");
 
-    for (let i = 0; i < amountOfitemsEquipments; i++) {
+    for (let i = 1; i < amountOfitemsEquipments; i++) {
       const actor = owner.equipments?.equipments[i];
       //console.log(actor?.name);
-      game.drawText(`${shortcut}) ${actor?.name}`, leftBorder + 2, 5 + i, "#FFFFFF");
+
+      if (i === Equips.None) game.drawText("unknow", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Body) game.drawText("body", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Foots) game.drawText("foots", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Hand1) game.drawText("hand 1", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Hand2) game.drawText("hand 2", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Hands) game.drawText("hands", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Helmet) game.drawText("helmet", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Legs) game.drawText("legs", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.Neck) game.drawText("neck", leftBorder + 2, 4 + i, "#FFFFFF");
+      if (i === Equips.TwoHand) game.drawText("two hands", leftBorder + 2, 4 + i, "#FFFFFF");
+
+      game.drawText(`${shortcut}) ${actor ? actor?.name : "..."}`, leftBorder + 2 + 10, 4 + i, "#FFFFFF");
 
       shortcut = String.fromCharCode(shortcut.charCodeAt(0) + 1);
     }
@@ -121,7 +133,7 @@ export class PlayerAI extends Ai {
     const wearItem = async () => {
       const actor = await this.chooseFromInventory(owner, "wear");
       if (actor) {
-        if (owner.equipments?.equip(owner, actor, Equips.Body)) {
+        if (owner.equipments?.equip(owner, actor, ensure(actor.pickable)?.equipslot)) {
           game.log?.addToLog(`Puet esineen ${actor.name}`, "#999");
         } else {
           game.log?.addToLog(`Esineen ${actor.name} pukeminen epäonnistui. Riisu ensin vanha varuste pois.`, "#F55");

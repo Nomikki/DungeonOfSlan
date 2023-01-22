@@ -2,6 +2,7 @@ import { ensure } from "@/utils";
 import Actor from ".";
 
 export enum Equips {
+  None,
   Hand1,
   Hand2,
   TwoHand,
