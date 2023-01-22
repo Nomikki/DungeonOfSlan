@@ -4,6 +4,7 @@ import { PlayerAI } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
 import { Container } from "./actor/container";
 import { Abilities, PlayerDestructible } from "./actor/destructible";
+import { Equipment } from "./actor/equipment";
 import { FieldOfView } from "./actor/fov";
 import { Healer, LightningBold } from "./actor/pickable";
 import Level, { random } from "./level";
@@ -491,21 +492,18 @@ export class Game {
       this.player.attacks?.push(new Attacker(attackPower, "str"));
       ensure(this.player).ai = new PlayerAI();
       this.player.container = new Container(26);
+      this.player.equipments = new Equipment();
       this.player.fov = new FieldOfView(ensure(this.level).width, ensure(this.level).height);
 
       this.player.pos = ensure(this.level).startPosition;
       return;
     }
 
-
-
-
     const monster = createMonster(name, x, y);
     if (monster) {
       this.actors.push(monster);
     }
     return;
-
   }
 
   async init() {

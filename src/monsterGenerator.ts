@@ -2,7 +2,9 @@ import monsterJson from "@/data/monsters";
 import Actor from "./actor";
 import { MonsterAi } from "./actor/ai";
 import { Attacker } from "./actor/attacker";
+import { Container } from "./actor/container";
 import { Destructible } from "./actor/destructible";
+import { Equipment } from "./actor/equipment";
 import { ensure } from "./utils";
 
 interface AbilitiesInterface {
@@ -59,6 +61,8 @@ export const createMonster = (name: string, x: number, y: number): Actor | undef
     }
     monster.destructible = new Destructible(monsterTemplate.hp, monsterTemplate.ac, "carcass of " + name);
     monster.destructible.abilities = monsterTemplate.abilities;
+    monster.container = new Container(26);
+    monster.equipments = new Equipment();
     return monster;
   }
 

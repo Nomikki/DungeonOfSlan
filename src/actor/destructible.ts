@@ -74,6 +74,14 @@ export class Destructible {
 
     game.sendToBack(owner);
   }
+
+  /*
+  CalculateAC(owner: Actor) {
+      this.defense = 10;
+
+      //owner.wear
+  }
+  */
 }
 
 export class MonsterDestructible extends Destructible {

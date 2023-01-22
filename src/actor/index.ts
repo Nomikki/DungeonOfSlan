@@ -5,6 +5,7 @@ import Ai, { MonsterAi, PlayerAI } from "./ai";
 import { Attacker } from "./attacker";
 import { Container } from "./container";
 import { ItemDestructible, MonsterDestructible, PlayerDestructible } from "./destructible";
+import { Equipment } from "./equipment";
 import { FieldOfView } from "./fov";
 import { Pickable } from "./pickable";
 
@@ -21,6 +22,7 @@ export default class Actor {
   destructible?: PlayerDestructible | MonsterDestructible | ItemDestructible;
   attacks: Attacker[];
   container?: Container;
+  equipments?: Equipment;
   pickable?: Pickable;
   fov?: FieldOfView;
 

@@ -4,6 +4,7 @@ import { ensure, float2int } from "@/utils";
 import vec2 from "@/utils/vec2";
 import Actor from ".";
 import { Color, game, GameStatus } from "..";
+import { Equips } from "./equipment";
 
 export default class Ai {
   latestInterestingPoint = new vec2(0, 0);
@@ -82,7 +83,63 @@ export class PlayerAI extends Ai {
     return undefined;
   }
 
+  async chooseFromEquipments(owner: Actor, hint: string) {
+    //let key = 0;
+    game.clear(new Color(0, 0, 0));
+    const widthOfEquipments = 40;
+    const amountOfitemsEquipments = ensure(owner.equipments)?.equipments.length;
+    ensure(game.camera).x += (widthOfEquipments / 2);
+    await game.render();
+    ensure(game.camera).x -= (widthOfEquipments / 2);
+    let shortcut = 'a';
+
+    const leftBorder = (game.width / game.fontSize) - widthOfEquipments - 1;
+
+    await game.drawFrames(" = EQUIPMENTS = ", leftBorder, 3, widthOfEquipments, amountOfitemsEquipments + 4);
+    game.drawText(hint, leftBorder, amountOfitemsEquipments + 7, "#FFF");
+
+    for (let i = 0; i < amountOfitemsEquipments; i++) {
+      const actor = owner.equipments?.equipments[i];
+      //console.log(actor?.name);
+      game.drawText(`${shortcut}) ${actor?.name}`, leftBorder + 2, 5 + i, "#FFFFFF");
+
+      shortcut = String.fromCharCode(shortcut.charCodeAt(0) + 1);
+    }
+
+    const ch = await game.getch();
+    const actorIndex = ch.charCodeAt(0) - 97; // 97 = a
+    if (actorIndex >= 0 && actorIndex < ensure(owner.equipments).equipments.length) {
+      return ensure(owner.equipments).equipments[actorIndex];
+    }
+    return undefined;
+  }
+
   async handleActionKey(owner: Actor, key: string) {
+
+
+
+    const wearItem = async () => {
+      const actor = await this.chooseFromInventory(owner, "wear");
+      if (actor) {
+        if (owner.equipments?.equip(owner, actor, Equips.Body)) {
+          game.log?.addToLog(`Puet esineen ${actor.name}`, "#999");
+        } else {
+          game.log?.addToLog(`Esineen ${actor.name} pukeminen epäonnistui. Riisu ensin vanha varuste pois.`, "#F55");
+        }
+      }
+      game.gamestatus = GameStatus.NEW_TURN;
+    };
+
+    const unwearItem = async () => {
+      const actor = await this.chooseFromEquipments(owner, "take off");
+      if (actor) {
+        game.log?.addToLog(`Riisut esineen ${actor.name}`, "#999");
+        if (owner.equipments?.takeOff(owner, actor) !== undefined) {
+          owner.container?.add(actor);
+        }
+      }
+      game.gamestatus = GameStatus.NEW_TURN;
+    };
 
     const useItem = async () => {
       const actor = await this.chooseFromInventory(owner, "use");
@@ -208,6 +265,10 @@ export class PlayerAI extends Ai {
       await useItem();
     } else if (key === "d") {
       await dropItem();
+    } else if (key === "w") {
+      await wearItem();
+    } else if (key === "u") {
+      await unwearItem();
     } else if (key === ">") {
       await handleNextLevel();
     } else if (key === "o") {
