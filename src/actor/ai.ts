@@ -56,12 +56,12 @@ export class PlayerAI extends Ai {
     game.clear(new Color(0, 0, 0));
     const widthOfInventory = 40;
     const amountOfitemsInInventory = ensure(owner.container)?.inventory.length;
-    ensure(game.camera).x += (widthOfInventory/2);
+    ensure(game.camera).x += (widthOfInventory / 2);
     await game.render();
-    ensure(game.camera).x -= (widthOfInventory/2);
+    ensure(game.camera).x -= (widthOfInventory / 2);
     let shortcut = 'a';
 
-    const leftBorder = (game.width / game.fontSize) - widthOfInventory-1;
+    const leftBorder = (game.width / game.fontSize) - widthOfInventory - 1;
 
     await game.drawFrames(" = INVENTORY = ", leftBorder, 3, widthOfInventory, amountOfitemsInInventory + 4);
     game.drawText(hint, leftBorder, amountOfitemsInInventory + 7, "#FFF");
@@ -69,7 +69,7 @@ export class PlayerAI extends Ai {
     for (let i = 0; i < amountOfitemsInInventory; i++) {
       const actor = owner.container?.inventory[i];
       console.log(actor?.name);
-      game.drawText(`${shortcut}) ${actor?.name}`, leftBorder+2, 5 + i, "#FFFFFF");
+      game.drawText(`${shortcut}) ${actor?.name}`, leftBorder + 2, 5 + i, "#FFFFFF");
 
       shortcut = String.fromCharCode(shortcut.charCodeAt(0) + 1);
     }
@@ -98,6 +98,15 @@ export class PlayerAI extends Ai {
       if (actor) {
         game.log?.addToLog(`Tiputit esineen ${actor.name}`, "#999");
         ensure(actor.pickable).drop(actor, owner);
+      }
+      game.gamestatus = GameStatus.NEW_TURN;
+    };
+
+    const handleRest = async () => {
+      game.log?.addToLog("Lepäät hetken", "#CCC");
+      if (random.dice(1, 100) === 100)
+      {
+        game.player?.destructible?.Heal(1);
       }
       game.gamestatus = GameStatus.NEW_TURN;
     };
@@ -200,13 +209,15 @@ export class PlayerAI extends Ai {
     else if (key === "i") {
       await useItem();
     } else if (key === "d") {
-        await dropItem();
+      await dropItem();
     } else if (key === ">") {
       await handleNextLevel();
     } else if (key === "o") {
       await handleOpenDoor();
     } else if (key === "c") {
       await handleCloseDoor();
+    } else if (key === ".") {
+      await handleRest();
     }
     /*
     else if (key === "R") {
