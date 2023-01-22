@@ -51,10 +51,10 @@ export class PlayerAI extends Ai {
 
   }
 
-  async chooseFromInventory(owner: Actor) {
+  async chooseFromInventory(owner: Actor, hint: string) {
     //let key = 0;
     game.clear(new Color(0, 0, 0));
-    const widthOfInventory = 32;
+    const widthOfInventory = 40;
     const amountOfitemsInInventory = ensure(owner.container)?.inventory.length;
     ensure(game.camera).x += (widthOfInventory/2);
     await game.render();
@@ -63,7 +63,8 @@ export class PlayerAI extends Ai {
 
     const leftBorder = (game.width / game.fontSize) - widthOfInventory-1;
 
-    await game.drawFrames(" INVENTORY ", leftBorder, 3, widthOfInventory, amountOfitemsInInventory + 4);
+    await game.drawFrames(" = INVENTORY = ", leftBorder, 3, widthOfInventory, amountOfitemsInInventory + 4);
+    game.drawText(hint, leftBorder, amountOfitemsInInventory + 7, "#FFF");
 
     for (let i = 0; i < amountOfitemsInInventory; i++) {
       const actor = owner.container?.inventory[i];
@@ -84,10 +85,19 @@ export class PlayerAI extends Ai {
   async handleActionKey(owner: Actor, key: string) {
 
     const useItem = async () => {
-      const actor = await this.chooseFromInventory(owner);
+      const actor = await this.chooseFromInventory(owner, "use");
       if (actor) {
         game.log?.addToLog(`Käytit esineen ${actor.name}`, "#999");
         ensure(actor.pickable).use(actor, owner);
+      }
+      game.gamestatus = GameStatus.NEW_TURN;
+    };
+
+    const dropItem = async () => {
+      const actor = await this.chooseFromInventory(owner, "drop");
+      if (actor) {
+        game.log?.addToLog(`Tiputit esineen ${actor.name}`, "#999");
+        ensure(actor.pickable).drop(actor, owner);
       }
       game.gamestatus = GameStatus.NEW_TURN;
     };
@@ -189,6 +199,8 @@ export class PlayerAI extends Ai {
     }
     else if (key === "i") {
       await useItem();
+    } else if (key === "d") {
+        await dropItem();
     } else if (key === ">") {
       await handleNextLevel();
     } else if (key === "o") {

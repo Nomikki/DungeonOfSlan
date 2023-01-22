@@ -18,6 +18,18 @@ export class Pickable {
     }
     return false;
   }
+
+  drop(owner: Actor, wearer: Actor): boolean {
+    if (wearer.container) {
+      wearer.container.remove(owner);
+      game.actors.push(owner);
+      game.sendToBack(owner);
+      owner.pos.x = wearer.pos.x;
+      owner.pos.y = wearer.pos.y;
+      return true;
+    }
+    return false;
+  }
 }
 
 export class Healer extends Pickable {
